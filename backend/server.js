@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const authRoute = require("./routes/authRoute");
+const eventRoutes = require("./routes/eventRoutes");
+const registrationRoutes = require("./routes/registrationRoutes");
 
 // Load environment variables
 dotenv.config();
@@ -13,6 +15,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+
 // Database connection
 mongoose.connect(process.env.MONGO_URI)
 .then(() => console.log("MongoDB connected successfully"))
@@ -20,6 +23,8 @@ mongoose.connect(process.env.MONGO_URI)
 
 // Routes
 app.use("/api/auth", authRoute);
+app.use("/api/events", eventRoutes);
+app.use("/api/events", registrationRoutes);
 
 // Basic route
 app.get("/", (req, res) => {
@@ -31,3 +36,4 @@ const PORT = process.env.PORT;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+

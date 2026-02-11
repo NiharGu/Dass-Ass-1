@@ -54,6 +54,29 @@ const userSchema = new mongoose.Schema(
       required: function () {
         return this.role === "participant";
       }
+    },
+
+    // These are REQUIRED only if role === "organizer"
+
+    organizerName: {
+      type: String,
+      required: function () {
+        return this.role === "organizer";
+      }
+    },
+
+    category: {
+      type: String,
+      required: function () {
+        return this.role === "organizer";
+      }
+    },
+
+    description: {
+      type: String,
+      required: function () {
+        return this.role === "organizer";
+      }
     }
   }
  
