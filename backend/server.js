@@ -5,6 +5,8 @@ const dotenv = require("dotenv");
 const authRoute = require("./routes/authRoute");
 const eventRoutes = require("./routes/eventRoutes");
 const registrationRoutes = require("./routes/registrationRoutes");
+const profileRoutes = require("./routes/profileRoutes");
+const organizerRoutes = require("./routes/organizerRoutes");
 
 // Load environment variables
 dotenv.config();
@@ -25,6 +27,8 @@ mongoose.connect(process.env.MONGO_URI)
 app.use("/api/auth", authRoute);
 app.use("/api/events", eventRoutes);
 app.use("/api/events", registrationRoutes);
+app.use("/api/profile", profileRoutes);
+app.use("/api/organizers", organizerRoutes);
 
 // Basic route
 app.get("/", (req, res) => {

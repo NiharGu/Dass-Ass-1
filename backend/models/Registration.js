@@ -14,10 +14,28 @@ const registrationSchema = new mongoose.Schema(
       required: true
     },
 
+    ticketId: {
+      type: String,
+      unique: true,
+      required: true
+    },
+
     formResponses: {
       type: Object, // answers to custom form
       default: {}
     },
+
+    merchandiseSelections: [
+      {
+        itemName: String,
+        size: String,
+        color: String,
+        quantity: {
+          type: Number,
+          default: 1
+        }
+      }
+    ],
 
     status: {
       type: String,

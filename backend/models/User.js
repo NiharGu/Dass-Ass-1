@@ -56,6 +56,18 @@ const userSchema = new mongoose.Schema(
       }
     },
 
+    selectedInterests: {
+      type: [String],
+      enum: ["Sports", "Cultural", "Technical", "Music", "Dance", "Drama", "Art", "Literature", "Social", "Other"],
+      default: []
+    },
+
+    followedClubs: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "User",
+      default: []
+    },
+
     // These are REQUIRED only if role === "organizer"
 
     organizerName: {
@@ -77,6 +89,30 @@ const userSchema = new mongoose.Schema(
       required: function () {
         return this.role === "organizer";
       }
+    },
+
+    contact: {
+      type: String,
+      required: function () {
+        return this.role === "organizer";
+      }
+    },
+
+    // Admin approval required for organizers
+    isApproved: {
+      type: Boolean,
+      default: function () {
+        return this.role !== "organizer"; // Auto-approve participants/admins, not organizers
+      }
+    },
+
+    // Password reset fields
+    resetPasswordToken: {
+      type: String
+    },
+
+    resetPasswordExpires: {
+      type: Date
     }
   }
  

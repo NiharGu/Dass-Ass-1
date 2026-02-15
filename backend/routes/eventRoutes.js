@@ -8,10 +8,20 @@ const {
   createEvent,
   getAllEvents,
   getEventById,
-  getOrganizerEvents
+  getOrganizerEvents,
+  getTrendingEvents
 } = require("../controllers/eventController");
 
 router.get("/", getAllEvents);
+router.get("/trending", getTrendingEvents);
+
+router.get(
+  "/organizer",
+  authMiddleware,
+  roleMiddleware(["organizer"]),
+  getOrganizerEvents
+);
+
 router.get("/:id", getEventById);
 
 router.post(
@@ -19,13 +29,6 @@ router.post(
   authMiddleware,
   roleMiddleware(["organizer"]),
   createEvent
-);
-
-router.get(
-  "/organizer",
-  authMiddleware,
-  roleMiddleware(["organizer"]),
-  getOrganizerEvents
 );
 
 module.exports = router;

@@ -66,7 +66,7 @@ const eventSchema = new mongoose.Schema(
     customForm: {
       type: Array,
       required: function () {
-        return this.eventType === "normal";
+        return this.Type === "normal";
       }
     },
 
@@ -77,11 +77,10 @@ const eventSchema = new mongoose.Schema(
           name: String,
           size: String,
           color: String,
-          stock: Number
+          stock: Number,
+          purchaseLimit: Number // Max quantity per participant for this specific item
         }
-      ],
-
-      purchaseLimitPerParticipant: Number
+      ]
     }
   },
   { timestamps: true }

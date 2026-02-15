@@ -6,7 +6,8 @@ const roleMiddleware = require("../middleware/roleMiddleware");
 
 const {
   registerForEvent,
-  cancelRegistration
+  cancelRegistration,
+  getParticipantRegistrations
 } = require("../controllers/registrationController");
 
 router.post(
@@ -22,5 +23,13 @@ router.patch(
   roleMiddleware(["participant"]),
   cancelRegistration
 );
+
+router.get(
+  "/my-registrations",
+  authMiddleware,
+  roleMiddleware(["participant"]),
+  getParticipantRegistrations
+);
+
 
 module.exports = router;
