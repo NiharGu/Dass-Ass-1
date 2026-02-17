@@ -28,9 +28,9 @@ exports.getOrganizerById = async (req, res) => {
       return res.status(403).json({ message: "Organizer is not approved" });
     }
 
-    // Get organizer's events with optional filter
+    // Get organizer's events with optional filter (only show published to public)
     const { filter } = req.query; // "upcoming" or "past"
-    let eventQuery = { organizer: organizer._id };
+    let eventQuery = { organizer: organizer._id, status: "published" };
 
     if (filter === "upcoming") {
       eventQuery.StartDate = { $gte: new Date() };

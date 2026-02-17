@@ -28,8 +28,13 @@ exports.updateProfile = async (req, res) => {
     // Fields that can be updated based on role
     const allowedUpdates = {
       participant: ["firstName", "lastName", "contactNumber", "collegeOrOrgName", "selectedInterests", "followedClubs"],
-      organizer: ["organizerName", "category", "description", "contact"]
+      organizer: ["organizerName", "category", "description", "contact", "discordWebhookUrl"]
     };
+
+    // Disabled organizers can view but not edit
+    if (user.role === "organizer" && !user.isApproved) {
+      return res.status(403).json({ message: "Your account is disabled. You cannot edit your profile." });
+    }
 
     const updates = allowedUpdates[user.role] || [];
 

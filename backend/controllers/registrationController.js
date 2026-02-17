@@ -63,6 +63,11 @@ exports.registerForEvent = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
+    // Only published events can be registered for
+    if (event.status !== "published") {
+      return res.status(400).json({ message: "This event is not open for registration" });
+    }
+
     // Check registration deadline
     if (new Date() > new Date(event.registrationDeadline)) {
       return res.status(400).json({ message: "Registration deadline has passed" });
@@ -73,6 +78,17 @@ exports.registerForEvent = async (req, res) => {
     // Check eligibility
     if (event.eligibility === "iiit-only" && user.participantType !== "iiit") {
       return res.status(403).json({ message: "This event is only for IIIT students" });
+    }
+
+    // Check for duplicate registration
+    const existingRegistration = await Registration.findOne({
+      participant: req.user.userId,
+      event: event._id,
+      status: "registered"
+    });
+    
+    if (existingRegistration) {
+      return res.status(400).json({ message: "You are already registered for this event" });
     }
 
     // Check registration limit

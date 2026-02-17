@@ -7,6 +7,7 @@ const eventRoutes = require("./routes/eventRoutes");
 const registrationRoutes = require("./routes/registrationRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const organizerRoutes = require("./routes/organizerRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 // Load environment variables
 dotenv.config();
@@ -29,6 +30,7 @@ app.use("/api/events", eventRoutes);
 app.use("/api/events", registrationRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/organizers", organizerRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Basic route
 app.get("/", (req, res) => {

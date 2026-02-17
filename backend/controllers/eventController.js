@@ -2,7 +2,39 @@ const Event = require("../models/events");
 const User = require("../models/User");
 const Registration = require("../models/Registration");
 
-// Organizer creates event
+// Helper: Post to Discord webhook
+const postToDiscord = async (webhookUrl, event, organizer) => {
+  try {
+    const payload = {
+      embeds: [{
+        title: `🎉 New Event: ${event.Name}`,
+        description: event.Description.substring(0, 200) + (event.Description.length > 200 ? "..." : ""),
+        color: 0x5865F2,
+        fields: [
+          { name: "Type", value: event.Type, inline: true },
+          { name: "Eligibility", value: event.eligibility, inline: true },
+          { name: "Fee", value: `₹${event.registrationFee}`, inline: true },
+          { name: "Start", value: new Date(event.StartDate).toLocaleString(), inline: true },
+          { name: "End", value: new Date(event.EndDate).toLocaleString(), inline: true },
+          { name: "Deadline", value: new Date(event.registrationDeadline).toLocaleString(), inline: true },
+          { name: "Organizer", value: organizer.organizerName || "Unknown", inline: false }
+        ],
+        timestamp: new Date().toISOString()
+      }]
+    };
+
+    await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+  } catch (error) {
+    console.error("Discord webhook failed:", error.message);
+    // Don't throw - event publishing should still succeed
+  }
+};
+
+// Organizer creates event (starts as draft)
 exports.createEvent = async (req, res) => {
   try {
     const user = await User.findById(req.user.userId);
@@ -12,16 +44,172 @@ exports.createEvent = async (req, res) => {
     }
 
     if (!user.isApproved) {
-      return res.status(403).json({ message: "Your organizer account is pending approval. Please wait for admin approval." });
+      return res.status(403).json({ message: "Your organizer account has been disabled. Contact admin." });
     }
 
     const event = await Event.create({
       ...req.body,
-      organizer: user._id
+      organizer: user._id,
+      status: "draft"
     });
 
     res.status(201).json(event);
-  } catch {
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Publish a draft event
+exports.publishEvent = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    if (!event.organizer.equals(req.user.userId)) {
+      return res.status(403).json({ message: "Not your event" });
+    }
+
+    const user = await User.findById(req.user.userId);
+    if (!user.isApproved) {
+      return res.status(403).json({ message: "Your account is disabled. You cannot publish events." });
+    }
+
+    if (event.status !== "draft") {
+      return res.status(400).json({ message: "Only draft events can be published" });
+    }
+
+    event.status = "published";
+    await event.save();
+
+    // Auto-post to Discord if organizer has webhook configured
+    if (user.discordWebhookUrl) {
+      await postToDiscord(user.discordWebhookUrl, event, user);
+    }
+
+    res.json({ message: "Event published successfully", event });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Edit event (with rules per Section 10.4)
+exports.updateEvent = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    if (!event.organizer.equals(req.user.userId)) {
+      return res.status(403).json({ message: "Not your event" });
+    }
+
+    const user = await User.findById(req.user.userId);
+    if (!user.isApproved) {
+      return res.status(403).json({ message: "Your account is disabled. You cannot edit events." });
+    }
+
+    // Validate StartDate and EndDate if provided (applies to both draft and published)
+    const { StartDate, EndDate } = req.body;
+    const now = new Date();
+
+    if (StartDate !== undefined || EndDate !== undefined) {
+      const newStart = StartDate ? new Date(StartDate) : event.StartDate;
+      const newEnd = EndDate ? new Date(EndDate) : event.EndDate;
+
+      if (newStart <= now) {
+        return res.status(400).json({ message: "Start date must be in the future" });
+      }
+      if (newEnd <= now) {
+        return res.status(400).json({ message: "End date must be in the future" });
+      }
+      if (newEnd <= newStart) {
+        return res.status(400).json({ message: "End date must be after start date" });
+      }
+    }
+
+    if (event.status === "draft") {
+      // Draft: free edits on all fields
+      const updates = req.body;
+      Object.keys(updates).forEach(key => {
+        if (key !== "organizer" && key !== "status") {
+          event[key] = updates[key];
+        }
+      });
+    } else if (event.status === "published") {
+      // Block edits if event is ongoing or completed
+      const now = new Date();
+      if (now >= event.StartDate) {
+        return res.status(400).json({ message: "Ongoing or completed events cannot be edited" });
+      }
+
+      // Published (not yet started): only description, extend deadline, increase limit, and dates
+      const { Description, registrationDeadline, registrationLimit } = req.body;
+
+      if (Description !== undefined) event.Description = Description;
+
+      if (StartDate !== undefined) event.StartDate = new Date(StartDate);
+      if (EndDate !== undefined) event.EndDate = new Date(EndDate);
+
+      if (registrationDeadline !== undefined) {
+        const newDeadline = new Date(registrationDeadline);
+        if (newDeadline > event.registrationDeadline) {
+          event.registrationDeadline = newDeadline;
+        } else {
+          return res.status(400).json({ message: "Can only extend the deadline, not shorten it" });
+        }
+      }
+
+      if (registrationLimit !== undefined) {
+        if (registrationLimit > event.registrationLimit) {
+          event.registrationLimit = registrationLimit;
+        } else {
+          return res.status(400).json({ message: "Can only increase the registration limit" });
+        }
+      }
+    } else {
+      // Closed: no edits
+      return res.status(400).json({ message: "Closed events cannot be edited" });
+    }
+
+    await event.save();
+    res.json({ message: "Event updated successfully", event });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Close event (stop registrations)
+exports.closeEvent = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    if (!event.organizer.equals(req.user.userId)) {
+      return res.status(403).json({ message: "Not your event" });
+    }
+
+    const user = await User.findById(req.user.userId);
+    if (!user.isApproved) {
+      return res.status(403).json({ message: "Your account is disabled. You cannot close events." });
+    }
+
+    if (event.status === "draft") {
+      return res.status(400).json({ message: "Cannot close a draft event. Publish it first." });
+    }
+
+    event.status = "closed";
+    await event.save();
+
+    res.json({ message: "Event closed successfully", event });
+  } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -31,7 +219,7 @@ exports.getAllEvents = async (req, res) => {
   try {
     const { search, eventType, eligibility, startDate, endDate, followedClubs } = req.query;
     
-    let query = {};
+    let query = { status: "published" }; // Only show published events publicly
 
     // Search: partial/fuzzy matching on event name or organizer name
     if (search) {
@@ -136,7 +324,7 @@ exports.getTrendingEvents = async (req, res) => {
     ]);
 
     const eventIds = recentRegistrations.map(r => r._id);
-    const events = await Event.find({ _id: { $in: eventIds } })
+    const events = await Event.find({ _id: { $in: eventIds }, status: "published" })
       .populate("organizer", "-password");
 
     // Sort by registration count
@@ -149,6 +337,200 @@ exports.getTrendingEvents = async (req, res) => {
     }).sort((a, b) => b.registrationCount - a.registrationCount);
 
     res.json(sortedEvents);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Organizer dashboard analytics (Section 10.2)
+exports.getOrganizerDashboard = async (req, res) => {
+  try {
+    const organizerId = req.user.userId;
+
+    const events = await Event.find({ organizer: organizerId });
+    const eventIds = events.map(e => e._id);
+
+    // Get all registrations for organizer's events
+    const registrations = await Registration.find({ event: { $in: eventIds } });
+
+    const activeRegistrations = registrations.filter(r => r.status === "registered");
+
+    // Per-event analytics
+    const eventAnalytics = await Promise.all(events.map(async (event) => {
+      const eventRegs = registrations.filter(r => r.event.equals(event._id));
+      const activeRegs = eventRegs.filter(r => r.status === "registered");
+      const cancelledRegs = eventRegs.filter(r => r.status === "cancelled");
+
+      // Revenue: registration fee * active registrations
+      const revenue = activeRegs.length * (event.registrationFee || 0);
+
+      // Merchandise sales count
+      let merchandiseSales = 0;
+      if (event.Type === "merchandise") {
+        activeRegs.forEach(reg => {
+          if (reg.merchandiseSelections) {
+            reg.merchandiseSelections.forEach(item => {
+              merchandiseSales += item.quantity || 0;
+            });
+          }
+        });
+      }
+
+      return {
+        eventId: event._id,
+        eventName: event.Name,
+        type: event.Type,
+        status: event.status,
+        startDate: event.StartDate,
+        endDate: event.EndDate,
+        totalRegistrations: activeRegs.length,
+        cancelledRegistrations: cancelledRegs.length,
+        registrationLimit: event.registrationLimit,
+        revenue,
+        merchandiseSales
+      };
+    }));
+
+    // Summary totals
+    const totalEvents = events.length;
+    const draftEvents = events.filter(e => e.status === "draft").length;
+    const publishedEvents = events.filter(e => e.status === "published").length;
+    const closedEvents = events.filter(e => e.status === "closed").length;
+    const totalRegistrations = activeRegistrations.length;
+    const totalRevenue = eventAnalytics.reduce((sum, e) => sum + e.revenue, 0);
+    const totalMerchandiseSales = eventAnalytics.reduce((sum, e) => sum + e.merchandiseSales, 0);
+
+    res.json({
+      summary: {
+        totalEvents,
+        draftEvents,
+        publishedEvents,
+        closedEvents,
+        totalRegistrations,
+        totalRevenue,
+        totalMerchandiseSales
+      },
+      events: eventAnalytics
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get participants for an event (Organizer view - Section 10.3)
+exports.getEventParticipants = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    if (!event.organizer.equals(req.user.userId)) {
+      return res.status(403).json({ message: "Not your event" });
+    }
+
+    const { search, status } = req.query;
+
+    let regQuery = { event: event._id };
+
+    // Filter by registration status
+    if (status === "registered" || status === "cancelled") {
+      regQuery.status = status;
+    }
+
+    let registrations = await Registration.find(regQuery)
+      .populate("participant", "-password")
+      .sort({ createdAt: -1 });
+
+    // Search by participant name or email
+    if (search) {
+      const searchLower = search.toLowerCase();
+      registrations = registrations.filter(reg => {
+        if (!reg.participant) return false;
+        const name = `${reg.participant.firstName || ""} ${reg.participant.lastName || ""}`.toLowerCase();
+        const email = (reg.participant.email || "").toLowerCase();
+        return name.includes(searchLower) || email.includes(searchLower);
+      });
+    }
+
+    // Format response
+    const participants = registrations.map(reg => ({
+      registrationId: reg._id,
+      ticketId: reg.ticketId,
+      participantName: reg.participant
+        ? `${reg.participant.firstName || ""} ${reg.participant.lastName || ""}`.trim()
+        : "[Deleted User]",
+      participantEmail: reg.participant ? reg.participant.email : "N/A",
+      registrationDate: reg.createdAt,
+      status: reg.status,
+      formResponses: reg.formResponses,
+      merchandiseSelections: reg.merchandiseSelections
+    }));
+
+    res.json({
+      eventName: event.Name,
+      totalParticipants: participants.filter(p => p.status === "registered").length,
+      participants
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Export event participants as CSV (Organizer - Section 10.3)
+exports.exportEventParticipantsCSV = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    if (!event.organizer.equals(req.user.userId)) {
+      return res.status(403).json({ message: "Not your event" });
+    }
+
+    const registrations = await Registration.find({ event: event._id })
+      .populate("participant", "-password")
+      .sort({ createdAt: -1 });
+
+    // Build CSV
+    const headers = ["Ticket ID", "Name", "Email", "Registration Date", "Status"];
+    
+    if (event.Type === "merchandise") {
+      headers.push("Merchandise Selections");
+    }
+
+    const rows = registrations.map(reg => {
+      const name = reg.participant
+        ? `${reg.participant.firstName || ""} ${reg.participant.lastName || ""}`.trim()
+        : "Deleted User";
+      const email = reg.participant ? reg.participant.email : "N/A";
+      
+      const row = [
+        reg.ticketId,
+        `"${name}"`,
+        email,
+        new Date(reg.createdAt).toISOString(),
+        reg.status
+      ];
+
+      if (event.Type === "merchandise" && reg.merchandiseSelections) {
+        const items = reg.merchandiseSelections
+          .map(s => `${s.itemName} (${s.size}/${s.color}) x${s.quantity}`)
+          .join("; ");
+        row.push(`"${items}"`);
+      }
+
+      return row.join(",");
+    });
+
+    const csv = [headers.join(","), ...rows].join("\n");
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", `attachment; filename="${event.Name}-participants.csv"`);
+    res.send(csv);
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }

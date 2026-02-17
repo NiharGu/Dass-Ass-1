@@ -106,13 +106,10 @@ const userSchema = new mongoose.Schema(
       }
     },
 
-    // Password reset fields
-    resetPasswordToken: {
-      type: String
-    },
-
-    resetPasswordExpires: {
-      type: Date
+    // Discord webhook URL for auto-posting events (organizer only)
+    discordWebhookUrl: {
+      type: String,
+      default: ""
     }
   }
  

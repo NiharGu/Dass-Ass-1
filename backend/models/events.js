@@ -62,6 +62,13 @@ const eventSchema = new mongoose.Schema(
       required: true
     },
 
+    // Event lifecycle status (Section 10.4)
+    status: {
+      type: String,
+      enum: ["draft", "published", "closed"],
+      default: "draft"
+    },
+
     // ───── NORMAL EVENT ONLY ─────
     customForm: {
       type: Array,

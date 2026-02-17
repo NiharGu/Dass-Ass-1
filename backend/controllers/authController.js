@@ -1,13 +1,30 @@
 const User = require("../models/User");
+const PasswordResetRequest = require("../models/PasswordResetRequest");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 
-// Register a new user
+// Register a new user (participants only)
 exports.register = async (req, res) => {
     try {
-        const { email, password, role, firstName, lastName, participantType, collegeOrOrgName, contactNumber } = req.body;
+        const { email, password, firstName, lastName, participantType, collegeOrOrgName, contactNumber } = req.body;
+
+        // Only participants can self-register
+        const role = "participant";
+
+        // Validate required fields
+        if (!email || !password || !firstName || !lastName || !participantType || !collegeOrOrgName || !contactNumber) {
+            return res.status(400).json({ message: "All fields are required" });
+        }
+
+        // IIIT email validation
+        if (participantType === "iiit") {
+            const iiitEmailRegex = /@(students\.|research\.)?iiit\.ac\.in$/i;
+            if (!iiitEmailRegex.test(email)) {
+                return res.status(400).json({ message: "IIIT participants must use an IIIT-issued email ID" });
+            }
+        }
 
         // Check if user already exists
         const existingUser = await User.findOne({ email });
@@ -18,7 +35,7 @@ exports.register = async (req, res) => {
         // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create user object based on role
+        // Create user object
         const userData = {
             email,
             password: hashedPassword,
@@ -38,7 +55,7 @@ exports.register = async (req, res) => {
         const token = jwt.sign(
             { userId: user._id, email: user.email, role: user.role },
             process.env.JWT_SECRET,
-            { expiresIn: "24h" }
+            { expiresIn: "30d" }
         );
 
         res.status(201).json({
@@ -46,9 +63,11 @@ exports.register = async (req, res) => {
             token,
             user: {
                 id: user._id,
-                name: user.name,
+                firstName: user.firstName,
+                lastName: user.lastName,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                participantType: user.participantType
             }
         });
     } catch (error) {
@@ -91,9 +110,12 @@ exports.login = async (req, res) => {
             token,
             user: {
                 id: user._id,
-                name: user.name,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                organizerName: user.organizerName,
+                isApproved: user.isApproved
             }
         });
     } catch (error) {
@@ -102,7 +124,8 @@ exports.login = async (req, res) => {
     }
 };
 
-// Forgot Password - Send reset token via email
+// Forgot Password - Participants only can self-reset via email
+// Organizers must request reset through Admin (Section 4.1.2)
 exports.forgotPassword = async (req, res) => {
     try {
         const { email } = req.body;
@@ -113,9 +136,15 @@ exports.forgotPassword = async (req, res) => {
 
         const user = await User.findOne({ email });
         if (!user) {
-            // Don't reveal if user exists or not for security
             return res.status(200).json({ 
                 message: "If an account exists with this email, a password reset link will be sent" 
+            });
+        }
+
+        // Organizers cannot self-reset - must go through admin
+        if (user.role === "organizer") {
+            return res.status(403).json({ 
+                message: "Organizer password resets must be requested through the Admin" 
             });
         }
 
@@ -124,10 +153,16 @@ exports.forgotPassword = async (req, res) => {
         
         // Hash token before storing
         const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
-        
-        user.resetPasswordToken = hashedToken;
-        user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
-        await user.save();
+
+        // Remove any existing reset request for this user
+        await PasswordResetRequest.deleteMany({ user: user._id });
+
+        await PasswordResetRequest.create({
+            user: user._id,
+            token: hashedToken,
+            expiresAt: Date.now() + 3600000, // 1 hour
+            type: "email"
+        });
 
         // Send email with reset link
         const transporter = nodemailer.createTransport({
@@ -165,7 +200,47 @@ exports.forgotPassword = async (req, res) => {
     }
 };
 
-// Reset Password - Verify token and update password
+// Organizer requests password reset from admin
+exports.requestPasswordReset = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.userId);
+
+        if (!user || user.role !== "organizer") {
+            return res.status(403).json({ message: "Only organizers use this endpoint" });
+        }
+
+        const { reason, newPassword } = req.body;
+
+        if (!newPassword) {
+            return res.status(400).json({ message: "New password is required" });
+        }
+
+        // Hash the new password before storing
+        const newPasswordHash = await bcrypt.hash(newPassword, 10);
+
+        // Remove any existing reset request for this user
+        await PasswordResetRequest.deleteMany({ user: user._id });
+
+        const requestToken = crypto.randomBytes(16).toString("hex");
+        const hashedToken = crypto.createHash("sha256").update(requestToken).digest("hex");
+
+        await PasswordResetRequest.create({
+            user: user._id,
+            token: hashedToken,
+            expiresAt: Date.now() + 7 * 24 * 3600000, // 7 days for admin to respond
+            reason: reason || "No reason provided",
+            newPasswordHash,
+            type: "admin"
+        });
+
+        res.json({ message: "Password reset request submitted. Admin will review it." });
+    } catch (error) {
+        console.error("Request password reset error:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+// Reset Password - Verify token and update password (participants only)
 exports.resetPassword = async (req, res) => {
     try {
         const { token, newPassword } = req.body;
@@ -177,22 +252,28 @@ exports.resetPassword = async (req, res) => {
         // Hash the token to compare with stored hash
         const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
-        const user = await User.findOne({
-            resetPasswordToken: hashedToken,
-            resetPasswordExpires: { $gt: Date.now() }
+        const resetRequest = await PasswordResetRequest.findOne({
+            token: hashedToken,
+            expiresAt: { $gt: Date.now() }
         });
 
-        if (!user) {
+        if (!resetRequest) {
             return res.status(400).json({ message: "Invalid or expired reset token" });
+        }
+
+        const user = await User.findById(resetRequest.user);
+        if (!user) {
+            return res.status(400).json({ message: "User not found" });
         }
 
         // Hash new password
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         
         user.password = hashedPassword;
-        user.resetPasswordToken = undefined;
-        user.resetPasswordExpires = undefined;
         await user.save();
+
+        // Clean up the request
+        await PasswordResetRequest.findByIdAndDelete(resetRequest._id);
 
         res.status(200).json({ message: "Password reset successful" });
     } catch (error) {
