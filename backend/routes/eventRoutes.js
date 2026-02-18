@@ -75,6 +75,14 @@ router.patch(
   publishEvent
 );
 
+
+router.delete(
+  "/:id",
+  authMiddleware,
+  roleMiddleware(["organizer"]),
+  require("../controllers/eventController").deleteEvent
+);
+
 router.patch(
   "/:id/close",
   authMiddleware,

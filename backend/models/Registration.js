@@ -37,6 +37,10 @@ const registrationSchema = new mongoose.Schema(
       }
     ],
 
+    qrCode: {
+      type: String
+    },
+
     status: {
       type: String,
       enum: ["registered", "cancelled"],

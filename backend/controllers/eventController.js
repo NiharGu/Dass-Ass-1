@@ -1,3 +1,22 @@
+// Delete a draft event (organizer only)
+exports.deleteEvent = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+    if (!event.organizer.equals(req.user.userId)) {
+      return res.status(403).json({ message: "Not your event" });
+    }
+    if (event.status !== "draft") {
+      return res.status(400).json({ message: "Only draft events can be deleted" });
+    }
+    await event.deleteOne();
+    res.json({ message: "Draft event deleted" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
 const Event = require("../models/events");
 const User = require("../models/User");
 const Registration = require("../models/Registration");
@@ -81,6 +100,24 @@ exports.publishEvent = async (req, res) => {
       return res.status(400).json({ message: "Only draft events can be published" });
     }
 
+    // Date validation (same as updateEvent)
+    const now = new Date();
+    if (!event.StartDate || !event.EndDate || !event.registrationDeadline) {
+      return res.status(400).json({ message: "All date fields are required" });
+    }
+    if (event.StartDate <= now) {
+      return res.status(400).json({ message: "Start date must be in the future" });
+    }
+    if (event.EndDate <= now) {
+      return res.status(400).json({ message: "End date must be in the future" });
+    }
+    if (event.EndDate <= event.StartDate) {
+      return res.status(400).json({ message: "End date must be after start date" });
+    }
+    if (event.registrationDeadline > event.EndDate) {
+      return res.status(400).json({ message: "Registration deadline cannot be after end date" });
+    }
+
     event.status = "published";
     await event.save();
 
@@ -141,34 +178,49 @@ exports.updateEvent = async (req, res) => {
         }
       });
     } else if (event.status === "published") {
-      // Block edits if event is ongoing or completed
+      // Published event: allow edits before or during the event, but restrict fields
       const now = new Date();
-      if (now >= event.StartDate) {
-        return res.status(400).json({ message: "Ongoing or completed events cannot be edited" });
-      }
-
-      // Published (not yet started): only description, extend deadline, increase limit, and dates
       const { Description, registrationDeadline, registrationLimit } = req.body;
 
-      if (Description !== undefined) event.Description = Description;
-
-      if (StartDate !== undefined) event.StartDate = new Date(StartDate);
-      if (EndDate !== undefined) event.EndDate = new Date(EndDate);
-
-      if (registrationDeadline !== undefined) {
-        const newDeadline = new Date(registrationDeadline);
-        if (newDeadline > event.registrationDeadline) {
-          event.registrationDeadline = newDeadline;
-        } else {
-          return res.status(400).json({ message: "Can only extend the deadline, not shorten it" });
-        }
+      // If event is completed (now > EndDate), block all edits
+      if (now > event.EndDate) {
+        return res.status(400).json({ message: "Completed events cannot be edited" });
       }
 
-      if (registrationLimit !== undefined) {
-        if (registrationLimit > event.registrationLimit) {
-          event.registrationLimit = registrationLimit;
-        } else {
-          return res.status(400).json({ message: "Can only increase the registration limit" });
+      // If event is ongoing (now >= StartDate && now <= EndDate), only allow Description and extending registrationDeadline
+      if (now >= event.StartDate && now <= event.EndDate) {
+        if (Description !== undefined) event.Description = Description;
+        if (registrationDeadline !== undefined) {
+          const newDeadline = new Date(registrationDeadline);
+          if (newDeadline >= event.registrationDeadline && newDeadline <= event.EndDate) {
+            event.registrationDeadline = newDeadline;
+          } else {
+            return res.status(400).json({ message: "Can only extend the deadline, not shorten it, and it cannot go past event end date" });
+          }
+        }
+        // Block changes to StartDate, EndDate, registrationLimit
+        if (StartDate !== undefined || EndDate !== undefined || registrationLimit !== undefined) {
+          return res.status(400).json({ message: "Cannot change start/end date or registration limit during ongoing event" });
+        }
+      } else {
+        // Not started yet: allow description, extend deadline, increase limit, and dates
+        if (Description !== undefined) event.Description = Description;
+        if (StartDate !== undefined) event.StartDate = new Date(StartDate);
+        if (EndDate !== undefined) event.EndDate = new Date(EndDate);
+        if (registrationDeadline !== undefined) {
+          const newDeadline = new Date(registrationDeadline);
+          if (newDeadline >= event.registrationDeadline && newDeadline <= (EndDate ? new Date(EndDate) : event.EndDate)) {
+            event.registrationDeadline = newDeadline;
+          } else {
+            return res.status(400).json({ message: "Can only extend the deadline, not shorten it, and it cannot go past event end date" });
+          }
+        }
+        if (registrationLimit !== undefined) {
+          if (registrationLimit >= event.registrationLimit) {
+            event.registrationLimit = registrationLimit;
+          } else {
+            return res.status(400).json({ message: "Can only increase the registration limit" });
+          }
         }
       }
     } else {

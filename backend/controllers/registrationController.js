@@ -20,7 +20,7 @@ const createEmailTransporter = () => {
 const sendTicketEmail = async (user, event, registration, qrCodeDataURL) => {
   try {
     const transporter = createEmailTransporter();
-    
+
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: user.email,
@@ -47,7 +47,7 @@ const sendTicketEmail = async (user, event, registration, qrCodeDataURL) => {
         <p>Thank you for registering!</p>
       `
     };
-    
+
     await transporter.sendMail(mailOptions);
   } catch (error) {
     console.error("Email sending failed:", error);
@@ -68,9 +68,12 @@ exports.registerForEvent = async (req, res) => {
       return res.status(400).json({ message: "This event is not open for registration" });
     }
 
-    // Check registration deadline
-    if (new Date() > new Date(event.registrationDeadline)) {
-      return res.status(400).json({ message: "Registration deadline has passed" });
+    // Allow registration until the earlier of registrationDeadline or event EndDate
+    const now = new Date();
+    const regDeadline = new Date(event.registrationDeadline);
+    const eventEnd = new Date(event.EndDate);
+    if (now > regDeadline && now > eventEnd) {
+      return res.status(400).json({ message: "Registration is closed (deadline and event have both passed)" });
     }
 
     const user = await User.findById(req.user.userId);
@@ -86,7 +89,7 @@ exports.registerForEvent = async (req, res) => {
       event: event._id,
       status: "registered"
     });
-    
+
     if (existingRegistration) {
       return res.status(400).json({ message: "You are already registered for this event" });
     }
@@ -96,7 +99,7 @@ exports.registerForEvent = async (req, res) => {
       event: event._id,
       status: "registered"
     });
-    
+
     if (registrationCount >= event.registrationLimit) {
       return res.status(400).json({ message: "Registration limit reached" });
     }
@@ -104,22 +107,22 @@ exports.registerForEvent = async (req, res) => {
     // Validate customForm responses for normal events
     if (event.Type === "normal" && event.customForm) {
       const formResponses = req.body.formResponses || {};
-      
+
       for (const field of event.customForm) {
         if (field.required && !formResponses[field.name]) {
-          return res.status(400).json({ 
-            message: `Missing required field: ${field.name}` 
+          return res.status(400).json({
+            message: `Missing required field: ${field.name}`
           });
         }
       }
     }
 
     let merchandiseSelections = [];
-    
+
     // Handle merchandise events
     if (event.Type === "merchandise") {
       const requestedItems = req.body.merchandiseSelections || [];
-      
+
       if (requestedItems.length === 0) {
         return res.status(400).json({ message: "Please select at least one merchandise item" });
       }
@@ -127,27 +130,27 @@ exports.registerForEvent = async (req, res) => {
       // Validate stock and purchase limit for each requested item
       for (const requestedItem of requestedItems) {
         const eventItem = event.merchandiseDetails.items.find(
-          item => item.name === requestedItem.itemName && 
-                  item.size === requestedItem.size && 
-                  item.color === requestedItem.color
+          item => item.name === requestedItem.itemName &&
+            item.size === requestedItem.size &&
+            item.color === requestedItem.color
         );
 
         if (!eventItem) {
-          return res.status(400).json({ 
-            message: `Item not found: ${requestedItem.itemName} (${requestedItem.size}, ${requestedItem.color})` 
+          return res.status(400).json({
+            message: `Item not found: ${requestedItem.itemName} (${requestedItem.size}, ${requestedItem.color})`
           });
         }
 
         // Check per-item purchase limit
         if (eventItem.purchaseLimit && requestedItem.quantity > eventItem.purchaseLimit) {
-          return res.status(400).json({ 
-            message: `Purchase limit for ${requestedItem.itemName} is ${eventItem.purchaseLimit} per participant` 
+          return res.status(400).json({
+            message: `Purchase limit for ${requestedItem.itemName} is ${eventItem.purchaseLimit} per participant`
           });
         }
 
         if (eventItem.stock < requestedItem.quantity) {
-          return res.status(400).json({ 
-            message: `Insufficient stock for ${requestedItem.itemName}. Available: ${eventItem.stock}` 
+          return res.status(400).json({
+            message: `Insufficient stock for ${requestedItem.itemName}. Available: ${eventItem.stock}`
           });
         }
       }
@@ -155,9 +158,9 @@ exports.registerForEvent = async (req, res) => {
       // Decrement stock for each item
       for (const requestedItem of requestedItems) {
         const itemIndex = event.merchandiseDetails.items.findIndex(
-          item => item.name === requestedItem.itemName && 
-                  item.size === requestedItem.size && 
-                  item.color === requestedItem.color
+          item => item.name === requestedItem.itemName &&
+            item.size === requestedItem.size &&
+            item.color === requestedItem.color
         );
 
         if (itemIndex !== -1) {
@@ -169,8 +172,20 @@ exports.registerForEvent = async (req, res) => {
       merchandiseSelections = requestedItems;
     }
 
+
     // Generate unique ticket ID
     const ticketId = uuidv4();
+
+    // Generate QR Code
+    const qrData = {
+      ticketId,
+      eventId: event._id,
+      eventName: event.Name,
+      participantId: user._id,
+      participantEmail: user.email
+    };
+
+    const qrCodeDataURL = await QRCode.toDataURL(JSON.stringify(qrData));
 
     // Create registration
     const registration = await Registration.create({
@@ -178,31 +193,18 @@ exports.registerForEvent = async (req, res) => {
       event: event._id,
       ticketId,
       formResponses: req.body.formResponses || {},
-      merchandiseSelections
+      merchandiseSelections,
+      qrCode: qrCodeDataURL
     });
 
     // Populate for response
     await registration.populate("event");
     await registration.populate("participant", "-password");
 
-    // Generate QR Code
-    const qrData = {
-      ticketId: registration.ticketId,
-      eventId: event._id,
-      eventName: event.Name,
-      participantId: user._id,
-      participantEmail: user.email
-    };
-    
-    const qrCodeDataURL = await QRCode.toDataURL(JSON.stringify(qrData));
-
     // Send ticket email
     await sendTicketEmail(user, event, registration, qrCodeDataURL);
 
-    res.status(201).json({
-      ...registration.toObject(),
-      qrCode: qrCodeDataURL
-    });
+    res.status(201).json(registration);
 
   } catch (error) {
     console.error("Registration error:", error);
@@ -228,9 +230,9 @@ exports.cancelRegistration = async (req, res) => {
 
       for (const purchasedItem of registration.merchandiseSelections) {
         const itemIndex = event.merchandiseDetails.items.findIndex(
-          item => item.name === purchasedItem.itemName && 
-                  item.size === purchasedItem.size && 
-                  item.color === purchasedItem.color
+          item => item.name === purchasedItem.itemName &&
+            item.size === purchasedItem.size &&
+            item.color === purchasedItem.color
         );
 
         if (itemIndex !== -1) {
@@ -242,6 +244,7 @@ exports.cancelRegistration = async (req, res) => {
     }
 
     registration.status = "cancelled";
+    registration.qrCode = null; // Invalidate QR Code
     await registration.save();
 
     res.json({ message: "Registration cancelled successfully" });
@@ -254,18 +257,21 @@ exports.cancelRegistration = async (req, res) => {
 exports.getParticipantRegistrations = async (req, res) => {
   try {
     const { filter } = req.query; // "upcoming", "past", "normal", "merchandise", "completed", "cancelled"
-    
+
     let query = { participant: req.user.userId };
-    
+
     // Filter by status
-    if (filter === "completed") {
+    if (filter === "completed" || filter === "upcoming") {
       query.status = "registered";
     } else if (filter === "cancelled") {
       query.status = "cancelled";
     }
 
     const registrations = await Registration.find(query)
-      .populate("event")
+      .populate({
+        path: "event",
+        populate: { path: "organizer", select: "organizerName" }
+      })
       .sort({ createdAt: -1 });
 
     // Further filter by event type or time
@@ -273,7 +279,7 @@ exports.getParticipantRegistrations = async (req, res) => {
 
     if (filter === "upcoming") {
       filteredRegistrations = registrations.filter(
-        reg => reg.event && new Date(reg.event.StartDate) >= new Date()
+        reg => reg.event && new Date(reg.event.EndDate) >= new Date()
       );
     } else if (filter === "past") {
       filteredRegistrations = registrations.filter(
@@ -299,3 +305,5 @@ exports.getParticipantRegistrations = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+

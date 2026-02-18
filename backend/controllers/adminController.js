@@ -32,6 +32,19 @@ exports.createOrganizer = async (req, res) => {
       });
     }
 
+    // Validate contact is email or phone
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!emailRegex.test(contact) && !phoneRegex.test(contact)) {
+      return res.status(400).json({ message: "Contact must be a valid email or 10-digit phone number" });
+    }
+
+    // Check for duplicate organizer name
+    const existingOrganizer = await User.findOne({ organizerName, role: "organizer" });
+    if (existingOrganizer) {
+      return res.status(400).json({ message: "An organizer with this name already exists" });
+    }
+
     // Auto-generate email from organizer name
     const emailBase = organizerName
       .toLowerCase()

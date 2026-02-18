@@ -9,7 +9,7 @@ router.use(authMiddleware);
 router.use(roleMiddleware(["admin"]));
 
 // Dashboard stats
-router.get("/dashboard/stats", adminController.getDashboardStats);
+router.get("/dashboard", adminController.getDashboardStats);
 
 // Password reset request management (organizer only)
 router.get("/password-reset-requests", adminController.getPasswordResetRequests);
