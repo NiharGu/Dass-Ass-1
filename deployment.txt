@@ -1,0 +1,2 @@
+Frontend URL: [Replace with Vercel URL, e.g., https://your-project.vercel.app]
+Backend API URL: [Replace with Render URL, e.g., https://your-backend.onrender.com/api]
