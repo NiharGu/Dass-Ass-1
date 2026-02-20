@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import API from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
+import DiscussionForum from '../../components/DiscussionForum';
 
 export default function EventDetails() {
   const { id } = useParams();
@@ -11,6 +12,8 @@ export default function EventDetails() {
   const [registering, setRegistering] = useState(false);
   const [formResponses, setFormResponses] = useState({});
   const [merchSelections, setMerchSelections] = useState([]);
+  const [showForum, setShowForum] = useState(false);
+  const [myRegistration, setMyRegistration] = useState(null);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -24,6 +27,14 @@ export default function EventDetails() {
       }
     }).catch(() => toast.error('Event not found'))
       .finally(() => setLoading(false));
+
+    // Check if user is registered for this event
+    if (user?.role === 'participant') {
+      API.get('/registration/my-registrations').then(res => {
+        const reg = res.data.find(r => r.event?._id === id && r.status === 'registered');
+        setMyRegistration(reg || null);
+      }).catch(() => { });
+    }
   }, [id]);
 
   const deadlinePassed = event && new Date() > new Date(event.registrationDeadline);
@@ -57,6 +68,36 @@ export default function EventDetails() {
     setMerchSelections(prev => prev.map((s, i) => i === idx ? { ...s, quantity: Math.max(0, qty) } : s));
   };
 
+  // Calendar integration
+  const handleDownloadICS = async () => {
+    if (!myRegistration) return toast.error('You must be registered to add to calendar');
+    try {
+      const res = await API.get(`/registration/${myRegistration._id}/calendar`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${event.Name}.ics`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success('Calendar file downloaded');
+    } catch { toast.error('Failed to download calendar file'); }
+  };
+
+  const getGoogleCalendarUrl = () => {
+    if (!event) return '';
+    const start = new Date(event.StartDate).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+    const end = new Date(event.EndDate).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+    return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.Name)}&dates=${start}/${end}&details=${encodeURIComponent(event.Description.substring(0, 200))}`;
+  };
+
+  const getOutlookCalendarUrl = () => {
+    if (!event) return '';
+    const start = new Date(event.StartDate).toISOString();
+    const end = new Date(event.EndDate).toISOString();
+    return `https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(event.Name)}&startdt=${start}&enddt=${end}&body=${encodeURIComponent(event.Description.substring(0, 200))}`;
+  };
+
   if (loading) return <div className="max-w-4xl mx-auto px-4 py-8"><p className="text-gray-400">Loading...</p></div>;
   if (!event) return <div className="max-w-4xl mx-auto px-4 py-8"><p className="text-gray-400">Event not found</p></div>;
 
@@ -69,12 +110,10 @@ export default function EventDetails() {
             <p className="text-gray-400 mt-1">{event.organizer?.organizerName || 'Unknown Organizer'}</p>
           </div>
           <div className="flex gap-2">
-            <span className={`text-xs px-3 py-1 rounded-full font-medium ${
-              event.Type === 'merchandise' ? 'bg-amber-900/40 text-amber-400' : 'bg-blue-900/40 text-blue-400'
-            }`}>{event.Type}</span>
-            <span className={`text-xs px-3 py-1 rounded-full font-medium capitalize ${
-              event.eligibility === 'open' ? 'bg-green-900/40 text-green-400' : 'bg-purple-900/40 text-purple-400'
-            }`}>{event.eligibility}</span>
+            <span className={`text-xs px-3 py-1 rounded-full font-medium ${event.Type === 'merchandise' ? 'bg-amber-900/40 text-amber-400' : 'bg-blue-900/40 text-blue-400'
+              }`}>{event.Type}</span>
+            <span className={`text-xs px-3 py-1 rounded-full font-medium capitalize ${event.eligibility === 'open' ? 'bg-green-900/40 text-green-400' : 'bg-purple-900/40 text-purple-400'
+              }`}>{event.eligibility}</span>
           </div>
         </div>
 
@@ -104,6 +143,27 @@ export default function EventDetails() {
             {event.Tags.map((tag, i) => (
               <span key={i} className="text-xs px-2.5 py-1 bg-gray-800 text-gray-400 rounded-full">{tag}</span>
             ))}
+          </div>
+        )}
+
+        {/* Add to Calendar (only for registered participants) */}
+        {myRegistration && (
+          <div className="border-t border-gray-800 pt-4 mb-6">
+            <p className="text-sm text-gray-400 mb-2">Add to Calendar</p>
+            <div className="flex gap-2 flex-wrap">
+              <button onClick={handleDownloadICS}
+                className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm rounded-lg cursor-pointer transition">
+                📅 Download .ics
+              </button>
+              <a href={getGoogleCalendarUrl()} target="_blank" rel="noopener noreferrer"
+                className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm rounded-lg transition">
+                🔵 Google Calendar
+              </a>
+              <a href={getOutlookCalendarUrl()} target="_blank" rel="noopener noreferrer"
+                className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm rounded-lg transition">
+                🔷 Outlook
+              </a>
+            </div>
           </div>
         )}
 
@@ -188,6 +248,21 @@ export default function EventDetails() {
           </div>
         )}
       </div>
+
+      {/* Discussion Forum Toggle */}
+      {user && isPublished && (
+        <div className="mt-6">
+          <button onClick={() => setShowForum(!showForum)}
+            className="w-full py-3 bg-gray-900 border border-gray-800 hover:border-gray-700 text-white font-medium rounded-2xl cursor-pointer transition text-sm">
+            {showForum ? 'Hide Discussion' : '💬 Open Discussion Forum'}
+          </button>
+          {showForum && (
+            <div className="mt-4">
+              <DiscussionForum eventId={id} isOrganizer={event.organizer?._id === user?.id} />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

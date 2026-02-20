@@ -14,7 +14,7 @@ router.get("/dashboard", adminController.getDashboardStats);
 // Password reset request management (organizer only)
 router.get("/password-reset-requests", adminController.getPasswordResetRequests);
 router.post("/users/:userId/reset-password", adminController.resetUserPassword);
-router.delete("/users/:userId/reset-request", adminController.rejectPasswordResetRequest);
+router.post("/users/:userId/reject-reset", adminController.rejectPasswordResetRequest);
 
 // Organizer management
 router.post("/organizers", adminController.createOrganizer);

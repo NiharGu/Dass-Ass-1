@@ -41,6 +41,24 @@ const registrationSchema = new mongoose.Schema(
       type: String
     },
 
+    // Attendance tracking
+    attended: {
+      type: Boolean,
+      default: false
+    },
+    attendedAt: {
+      type: Date
+    },
+    attendedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    },
+    attendanceMethod: {
+      type: String,
+      enum: ["qr", "manual", null],
+      default: null
+    },
+
     status: {
       type: String,
       enum: ["registered", "cancelled"],

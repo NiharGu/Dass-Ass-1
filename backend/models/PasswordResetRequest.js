@@ -34,12 +34,30 @@ const passwordResetRequestSchema = new mongoose.Schema(
       type: String,
       enum: ["email", "admin"],
       required: true
+    },
+
+    // Request tracking
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending"
+    },
+
+    // Admin comment when approving or rejecting
+    adminComment: {
+      type: String,
+      default: ""
+    },
+
+    // When the admin acted on this request
+    resolvedAt: {
+      type: Date
     }
   },
   { timestamps: true }
 );
 
-// Auto-delete expired requests
+// Auto-delete expired *email* requests only
 passwordResetRequestSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 module.exports = mongoose.model("PasswordResetRequest", passwordResetRequestSchema);

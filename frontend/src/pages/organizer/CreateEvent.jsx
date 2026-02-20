@@ -12,6 +12,7 @@ export default function CreateEvent() {
     Name: '', Description: '', Type: 'normal', eligibility: 'open',
     registrationDeadline: '', StartDate: '', EndDate: '',
     registrationLimit: 100, registrationFee: 0, Tags: '',
+    isTeamEvent: false, minTeamSize: 2, maxTeamSize: 4,
   });
   const [customForm, setCustomForm] = useState([]);
   const [merchItems, setMerchItems] = useState([]);
@@ -50,6 +51,9 @@ export default function CreateEvent() {
       registrationLimit: Number(form.registrationLimit),
       registrationFee: Number(form.registrationFee),
       Tags: form.Tags ? form.Tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+      isTeamEvent: form.isTeamEvent,
+      minTeamSize: Number(form.minTeamSize),
+      maxTeamSize: Number(form.maxTeamSize),
     };
     if (form.Type === 'normal') {
       body.customForm = customForm.map(f => ({
@@ -87,13 +91,11 @@ export default function CreateEvent() {
     e.preventDefault();
     setSaving(true);
     try {
-      // 1. Create draft
-      const res = await API.post('/events', buildBody());
-      const eventId = res.data._id;
-      // 2. Publish
-      await API.post(`/events/${eventId}/publish`);
+      const body = buildBody();
+      body.status = "published";
+      const res = await API.post(`/events`, body);
       toast.success('Event created and published!');
-      navigate(`/organizer/events/${eventId}`);
+      navigate(`/organizer/events/${res.data._id}`);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to create & publish');
     } finally {
@@ -175,6 +177,32 @@ export default function CreateEvent() {
               <input type="text" value={form.Tags} onChange={set('Tags')} placeholder="music, outdoor"
                 className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
             </div>
+          </div>
+
+          {/* Team Event Settings */}
+          <div className="border-t border-gray-800 pt-4">
+            <label className="flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" checked={form.isTeamEvent}
+                onChange={(e) => setForm({ ...form, isTeamEvent: e.target.checked })}
+                className="w-4 h-4 accent-indigo-500" />
+              <span className="text-sm text-gray-300">This is a team-based event (hackathon)</span>
+            </label>
+            {form.isTeamEvent && (
+              <div className="grid grid-cols-2 gap-4 mt-3">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Min Team Size</label>
+                  <input type="number" min={2} max={20} value={form.minTeamSize}
+                    onChange={(e) => setForm({ ...form, minTeamSize: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Max Team Size</label>
+                  <input type="number" min={2} max={20} value={form.maxTeamSize}
+                    onChange={(e) => setForm({ ...form, maxTeamSize: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

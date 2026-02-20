@@ -69,6 +69,20 @@ const eventSchema = new mongoose.Schema(
       default: "draft"
     },
 
+    // ───── TEAM EVENT SETTINGS ─────
+    isTeamEvent: {
+      type: Boolean,
+      default: false
+    },
+    minTeamSize: {
+      type: Number,
+      default: 2
+    },
+    maxTeamSize: {
+      type: Number,
+      default: 4
+    },
+
     // ───── NORMAL EVENT ONLY ─────
     customForm: {
       type: Array,

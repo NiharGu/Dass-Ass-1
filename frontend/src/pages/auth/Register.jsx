@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
+const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI';
+
 export default function Register() {
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '', password: '',
@@ -14,11 +16,22 @@ export default function Register() {
 
   const set = (field) => (e) => setForm({ ...form, [field]: e.target.value });
 
+  const getCaptchaToken = () => {
+    return new Promise((resolve) => {
+      if (window.grecaptcha && window.grecaptcha.execute) {
+        window.grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'register' }).then(resolve);
+      } else {
+        resolve(null);
+      }
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await register(form);
+      const captchaToken = await getCaptchaToken();
+      await register({ ...form, captchaToken });
       toast.success('Registration successful!');
       navigate('/onboarding');
     } catch (err) {

@@ -17,6 +17,7 @@ import EventDetails from './pages/participant/EventDetails';
 import ParticipantProfile from './pages/participant/Profile';
 import Clubs from './pages/participant/Clubs';
 import OrganizerDetail from './pages/participant/OrganizerDetail';
+import Teams from './pages/participant/Teams';
 
 // Organizer
 import OrganizerDashboard from './pages/organizer/Dashboard';
@@ -24,6 +25,7 @@ import CreateEvent from './pages/organizer/CreateEvent';
 import OrganizerEventDetail from './pages/organizer/EventDetail';
 import EditEvent from './pages/organizer/EditEvent';
 import OrganizerProfile from './pages/organizer/Profile';
+import AttendanceScanner from './pages/organizer/AttendanceScanner';
 
 // Admin
 import AdminDashboard from './pages/admin/Dashboard';
@@ -58,6 +60,7 @@ export default function App() {
         <Route path="/profile" element={<ProtectedRoute role="participant"><ParticipantProfile /></ProtectedRoute>} />
         <Route path="/clubs" element={<ProtectedRoute role="participant"><Clubs /></ProtectedRoute>} />
         <Route path="/organizers/:id" element={<ProtectedRoute role="participant"><OrganizerDetail /></ProtectedRoute>} />
+        <Route path="/teams" element={<ProtectedRoute role="participant"><Teams /></ProtectedRoute>} />
 
         {/* Organizer */}
         <Route path="/organizer" element={<ProtectedRoute role="organizer"><Navigate to="/organizer/dashboard" /></ProtectedRoute>} />
@@ -65,6 +68,7 @@ export default function App() {
         <Route path="/organizer/create-event" element={<ProtectedRoute role="organizer"><CreateEvent /></ProtectedRoute>} />
         <Route path="/organizer/events/:id" element={<ProtectedRoute role="organizer"><OrganizerEventDetail /></ProtectedRoute>} />
         <Route path="/organizer/events/:id/edit" element={<ProtectedRoute role="organizer"><EditEvent /></ProtectedRoute>} />
+        <Route path="/organizer/events/:id/attendance" element={<ProtectedRoute role="organizer"><AttendanceScanner /></ProtectedRoute>} />
         <Route path="/organizer/profile" element={<ProtectedRoute role="organizer"><OrganizerProfile /></ProtectedRoute>} />
 
         {/* Admin */}

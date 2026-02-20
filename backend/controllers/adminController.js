@@ -27,8 +27,8 @@ exports.createOrganizer = async (req, res) => {
 
     // Validate required fields
     if (!organizerName || !category || !description || !contact) {
-      return res.status(400).json({ 
-        message: "All fields are required: organizerName, category, description, contact" 
+      return res.status(400).json({
+        message: "All fields are required: organizerName, category, description, contact"
       });
     }
 
@@ -50,10 +50,10 @@ exports.createOrganizer = async (req, res) => {
       .toLowerCase()
       .replace(/[^a-z0-9]/g, '') // Remove special chars
       .substring(0, 20); // Limit length
-    
+
     let email = `${emailBase}@events.com`;
     let counter = 1;
-    
+
     // Ensure unique email
     while (await User.findOne({ email })) {
       email = `${emailBase}${counter}@events.com`;
@@ -102,9 +102,9 @@ exports.createOrganizer = async (req, res) => {
 exports.getAllOrganizers = async (req, res) => {
   try {
     const { status } = req.query; // "enabled", "disabled", or all
-    
+
     let query = { role: "organizer" };
-    
+
     if (status === "enabled") {
       query.isApproved = true;
     } else if (status === "disabled") {
@@ -138,7 +138,7 @@ exports.enableOrganizer = async (req, res) => {
     organizer.isApproved = true;
     await organizer.save();
 
-    res.json({ 
+    res.json({
       message: "Organizer enabled successfully. They can now log in and create events.",
       organizer: {
         id: organizer._id,
@@ -168,7 +168,7 @@ exports.disableOrganizer = async (req, res) => {
     organizer.isApproved = false;
     await organizer.save();
 
-    res.json({ 
+    res.json({
       message: "Organizer disabled successfully. They can no longer log in or create events.",
       organizer: {
         id: organizer._id,
@@ -202,7 +202,7 @@ exports.deleteOrganizer = async (req, res) => {
     // Frontend should handle deleted organizer gracefully (e.g., show "[Deleted Organizer]")
     await User.findByIdAndDelete(req.params.id);
 
-    res.json({ 
+    res.json({
       message: "Organizer permanently deleted",
       deletedId: req.params.id,
       note: eventCount > 0 ? `${eventCount} events preserved for participant records` : "No events to preserve"
@@ -217,20 +217,20 @@ exports.deleteOrganizer = async (req, res) => {
 exports.getDashboardStats = async (req, res) => {
   try {
     const Event = require("../models/events");
-    
+
     const totalOrganizers = await User.countDocuments({ role: "organizer" });
-    const enabledOrganizers = await User.countDocuments({ 
-      role: "organizer", 
-      isApproved: true 
+    const enabledOrganizers = await User.countDocuments({
+      role: "organizer",
+      isApproved: true
     });
-    const disabledOrganizers = await User.countDocuments({ 
-      role: "organizer", 
-      isApproved: false 
+    const disabledOrganizers = await User.countDocuments({
+      role: "organizer",
+      isApproved: false
     });
     const totalParticipants = await User.countDocuments({ role: "participant" });
     const totalEvents = await Event.countDocuments();
-    const upcomingEvents = await Event.countDocuments({ 
-      StartDate: { $gte: new Date() } 
+    const upcomingEvents = await Event.countDocuments({
+      StartDate: { $gte: new Date() }
     });
 
     res.json({
@@ -250,10 +250,13 @@ exports.getDashboardStats = async (req, res) => {
 // Get organizer password reset requests
 exports.getPasswordResetRequests = async (req, res) => {
   try {
-    const requests = await PasswordResetRequest.find({
-      type: "admin",
-      expiresAt: { $gt: Date.now() }
-    })
+    const { status } = req.query; // "pending", "approved", "rejected", or all
+    let query = { type: "admin" };
+    if (status) {
+      query.status = status;
+    }
+
+    const requests = await PasswordResetRequest.find(query)
       .populate("user", "-password")
       .sort({ createdAt: -1 });
 
@@ -268,6 +271,7 @@ exports.getPasswordResetRequests = async (req, res) => {
 exports.resetUserPassword = async (req, res) => {
   try {
     const { userId } = req.params;
+    const { comment } = req.body;
 
     const user = await User.findById(userId);
 
@@ -279,21 +283,24 @@ exports.resetUserPassword = async (req, res) => {
       return res.status(400).json({ message: "Only organizer password resets are handled by admin" });
     }
 
-    // Find the reset request with the stored password hash
-    const resetRequest = await PasswordResetRequest.findOne({ user: user._id, type: "admin" });
+    // Find the pending reset request with the stored password hash
+    const resetRequest = await PasswordResetRequest.findOne({ user: user._id, type: "admin", status: "pending" });
 
     if (!resetRequest || !resetRequest.newPasswordHash) {
-      return res.status(400).json({ message: "No valid password reset request found for this organizer" });
+      return res.status(400).json({ message: "No pending password reset request found for this organizer" });
     }
 
     // Use the organizer's chosen password (already hashed)
     user.password = resetRequest.newPasswordHash;
     await user.save();
 
-    // Clean up the reset request
-    await PasswordResetRequest.deleteMany({ user: user._id });
+    // Update request status instead of deleting (keep for history)
+    resetRequest.status = "approved";
+    resetRequest.adminComment = comment || "";
+    resetRequest.resolvedAt = new Date();
+    await resetRequest.save();
 
-    res.json({ 
+    res.json({
       message: "Password reset approved. The organizer can now log in with their new password."
     });
   } catch (error) {
@@ -306,6 +313,7 @@ exports.resetUserPassword = async (req, res) => {
 exports.rejectPasswordResetRequest = async (req, res) => {
   try {
     const { userId } = req.params;
+    const { comment } = req.body;
 
     const user = await User.findById(userId);
 
@@ -313,7 +321,16 @@ exports.rejectPasswordResetRequest = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    await PasswordResetRequest.deleteMany({ user: user._id });
+    const resetRequest = await PasswordResetRequest.findOne({ user: user._id, type: "admin", status: "pending" });
+    if (!resetRequest) {
+      return res.status(400).json({ message: "No pending request found" });
+    }
+
+    // Update status instead of deleting
+    resetRequest.status = "rejected";
+    resetRequest.adminComment = comment || "";
+    resetRequest.resolvedAt = new Date();
+    await resetRequest.save();
 
     res.json({ message: "Password reset request rejected" });
   } catch (error) {

@@ -15,6 +15,7 @@ export default function Navbar() {
   const participantLinks = [
     { to: '/dashboard', label: 'Dashboard' },
     { to: '/events', label: 'Browse Events' },
+    { to: '/teams', label: 'Teams' },
     { to: '/clubs', label: 'Clubs' },
     { to: '/profile', label: 'Profile' },
   ];
@@ -33,7 +34,7 @@ export default function Navbar() {
 
   const links = user.role === 'admin' ? adminLinks
     : user.role === 'organizer' ? organizerLinks
-    : participantLinks;
+      : participantLinks;
 
   return (
     <nav className="bg-gray-900 border-b border-gray-800">

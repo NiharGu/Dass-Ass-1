@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import API from '../../api/axios';
 import toast from 'react-hot-toast';
+import DiscussionForum from '../../components/DiscussionForum';
 
 export default function OrganizerEventDetail() {
   const { id } = useParams();
@@ -13,6 +14,7 @@ export default function OrganizerEventDetail() {
   const [tab, setTab] = useState('overview');
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [showForum, setShowForum] = useState(false);
 
   useEffect(() => {
     fetchAll();
@@ -121,7 +123,10 @@ export default function OrganizerEventDetail() {
             </>
           )}
           {event.status === 'published' && (
-            <button onClick={handleClose} className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm cursor-pointer transition">Close</button>
+            <>
+              <button onClick={() => navigate(`/organizer/events/${id}/attendance`)} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm cursor-pointer transition">📷 Attendance</button>
+              <button onClick={handleClose} className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm cursor-pointer transition">Close</button>
+            </>
           )}
           {(event.status === 'draft' || event.status === 'published') && (
             <button onClick={() => navigate(`/organizer/events/${id}/edit`)} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm cursor-pointer transition">Edit</button>
@@ -131,10 +136,10 @@ export default function OrganizerEventDetail() {
 
       {/* Tabs */}
       <div className="flex gap-1 bg-gray-900 rounded-lg p-1 mb-6">
-        {['overview', 'participants', 'analytics'].map(t => (
+        {['overview', 'participants', 'analytics', 'forum'].map(t => (
           <button key={t} onClick={() => setTab(t)}
             className={`flex-1 py-2 rounded-md text-sm font-medium cursor-pointer transition ${tab === t ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'}`}>
-            {t.charAt(0).toUpperCase() + t.slice(1)}
+            {t === 'forum' ? '💬 Forum' : t.charAt(0).toUpperCase() + t.slice(1)}
           </button>
         ))}
       </div>
@@ -259,6 +264,11 @@ export default function OrganizerEventDetail() {
             <p className="text-gray-500 text-center py-8">No analytics available yet</p>
           )}
         </div>
+      )}
+
+      {/* Forum */}
+      {tab === 'forum' && (
+        <DiscussionForum eventId={id} isOrganizer={true} />
       )}
     </div>
   );

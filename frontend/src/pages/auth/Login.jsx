@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
+const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI';
+
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -10,11 +12,22 @@ export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  const getCaptchaToken = () => {
+    return new Promise((resolve) => {
+      if (window.grecaptcha && window.grecaptcha.execute) {
+        window.grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'login' }).then(resolve);
+      } else {
+        resolve(null); // skip if not loaded
+      }
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const user = await login(email, password);
+      const captchaToken = await getCaptchaToken();
+      const user = await login(email, password, captchaToken);
       toast.success('Login successful!');
       if (user.role === 'admin') navigate('/admin/dashboard');
       else if (user.role === 'organizer') navigate('/organizer/dashboard');

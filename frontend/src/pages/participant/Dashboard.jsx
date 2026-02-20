@@ -101,6 +101,23 @@ export default function ParticipantDashboard() {
                     }`}>
                     {reg.status}
                   </span>
+                  {reg.status === 'registered' && (
+                    <button onClick={async () => {
+                      try {
+                        const res = await API.get(`/registration/${reg._id}/calendar`, { responseType: 'blob' });
+                        const url = window.URL.createObjectURL(new Blob([res.data]));
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.setAttribute('download', `${reg.event?.Name || 'event'}.ics`);
+                        document.body.appendChild(link);
+                        link.click();
+                        link.remove();
+                      } catch { toast.error('Failed to download calendar'); }
+                    }}
+                      className="text-xs text-blue-400 hover:text-blue-300 cursor-pointer" title="Add to Calendar">
+                      📅
+                    </button>
+                  )}
                   {reg.status === 'registered' && tab !== 'completed' && (
                     <button onClick={() => cancelRegistration(reg._id)}
                       className="text-xs text-red-400 hover:text-red-300 cursor-pointer">

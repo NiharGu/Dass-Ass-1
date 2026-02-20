@@ -65,14 +65,48 @@ exports.createEvent = async (req, res) => {
     if (!user.isApproved) {
       return res.status(403).json({ message: "Your organizer account has been disabled. Contact admin." });
     }
+    if (req.body.status === "published") {
+      // Date validation
+      const { StartDate, EndDate, registrationDeadline } = req.body;
+      const now = new Date();
 
-    const event = await Event.create({
-      ...req.body,
-      organizer: user._id,
-      status: "draft"
-    });
+      if (!StartDate || !EndDate || !registrationDeadline) {
+        return res.status(400).json({ message: "All date fields are required for published events" });
+      }
+      if (new Date(StartDate) <= now) {
+        return res.status(400).json({ message: "Start date must be in the future" });
+      }
+      if (new Date(EndDate) <= now) {
+        return res.status(400).json({ message: "End date must be in the future" });
+      }
+      if (new Date(EndDate) <= new Date(StartDate)) {
+        return res.status(400).json({ message: "End date must be after start date" });
+      }
+      if (new Date(registrationDeadline) > new Date(EndDate)) {
+        return res.status(400).json({ message: "Registration deadline cannot be after end date" });
+      }
 
-    res.status(201).json(event);
+      const event = await Event.create({
+        ...req.body,
+        organizer: user._id,
+        status: "published"
+      });
+
+      if (user.discordWebhookUrl) {
+        await postToDiscord(user.discordWebhookUrl, event, user);
+      }
+      res.status(201).json(event);
+    } else {
+      const event = await Event.create({
+        ...req.body,
+        organizer: user._id,
+        status: "draft"
+      });
+
+      res.status(201).json(event);
+    }
+
+
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
@@ -270,7 +304,7 @@ exports.closeEvent = async (req, res) => {
 exports.getAllEvents = async (req, res) => {
   try {
     const { search, eventType, eligibility, startDate, endDate, followedClubs } = req.query;
-    
+
     let query = { status: "published" }; // Only show published events publicly
 
     // Search: partial/fuzzy matching on event name or organizer name
@@ -279,9 +313,9 @@ exports.getAllEvents = async (req, res) => {
         organizerName: { $regex: search, $options: "i" },
         role: "organizer"
       }).select("_id");
-      
+
       const organizerIds = organizers.map(org => org._id);
-      
+
       query.$or = [
         { Name: { $regex: search, $options: "i" } },
         { organizer: { $in: organizerIds } }
@@ -325,11 +359,11 @@ exports.getAllEvents = async (req, res) => {
 exports.getEventById = async (req, res) => {
   try {
     const event = await Event.findById(req.params.id).populate("organizer", "-password");
-    
+
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
-    
+
     res.json(event);
   } catch (error) {
     res.status(500).json({ message: "Server error" });
@@ -352,7 +386,7 @@ exports.getOrganizerEvents = async (req, res) => {
 exports.getTrendingEvents = async (req, res) => {
   try {
     const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    
+
     // Get registrations from last 24 hours
     const recentRegistrations = await Registration.aggregate([
       {
@@ -549,7 +583,7 @@ exports.exportEventParticipantsCSV = async (req, res) => {
 
     // Build CSV
     const headers = ["Ticket ID", "Name", "Email", "Registration Date", "Status"];
-    
+
     if (event.Type === "merchandise") {
       headers.push("Merchandise Selections");
     }
@@ -559,7 +593,7 @@ exports.exportEventParticipantsCSV = async (req, res) => {
         ? `${reg.participant.firstName || ""} ${reg.participant.lastName || ""}`.trim()
         : "Deleted User";
       const email = reg.participant ? reg.participant.email : "N/A";
-      
+
       const row = [
         reg.ticketId,
         `"${name}"`,
