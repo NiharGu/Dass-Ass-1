@@ -345,9 +345,36 @@ exports.getAllEvents = async (req, res) => {
       query.organizer = { $in: clubIds };
     }
 
-    const events = await Event.find(query)
+    let events = await Event.find(query)
       .populate("organizer", "-password")
       .sort({ StartDate: 1 });
+
+    // Preference-based ordering for participants
+    if (req.user && req.user.role === "participant") {
+      const user = await User.findById(req.user.userId);
+      if (user) {
+        events = events.sort((a, b) => {
+          let scoreA = 0;
+          let scoreB = 0;
+
+          if (a.organizer) {
+            if (user.followedClubs && user.followedClubs.some(id => id.equals(a.organizer._id))) scoreA += 10;
+            if (user.selectedInterests && a.organizer.category && Array.isArray(a.organizer.category) &&
+              a.organizer.category.some(cat => user.selectedInterests.includes(cat))) scoreA += 5;
+          }
+          if (b.organizer) {
+            if (user.followedClubs && user.followedClubs.some(id => id.equals(b.organizer._id))) scoreB += 10;
+            if (user.selectedInterests && b.organizer.category && Array.isArray(b.organizer.category) &&
+              b.organizer.category.some(cat => user.selectedInterests.includes(cat))) scoreB += 5;
+          }
+
+          if (scoreB !== scoreA) {
+            return scoreB - scoreA; // Highest score first
+          }
+          return new Date(a.StartDate) - new Date(b.StartDate); // Fallback to StartDate
+        });
+      }
+    }
 
     res.json(events);
   } catch (error) {

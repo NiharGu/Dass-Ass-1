@@ -1,22 +1,22 @@
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
-    {
-        
-        email:{
-            type: String,
-            required: true,
-            unique: true
-        },
-        password:{
-            type: String,
-            required: true
-        },
-        role:{
-            type: String,
-            enum:["admin","organizer","participant"],
-            required: true
-        },
+  {
+
+    email: {
+      type: String,
+      required: true,
+      unique: true
+    },
+    password: {
+      type: String,
+      required: true
+    },
+    role: {
+      type: String,
+      enum: ["admin", "organizer", "participant"],
+      required: true
+    },
 
     // These are REQUIRED only if role === "participant"
 
@@ -78,7 +78,8 @@ const userSchema = new mongoose.Schema(
     },
 
     category: {
-      type: String,
+      type: [String],
+      enum: ["Sports", "Cultural", "Technical", "Music", "Dance", "Drama", "Art", "Literature", "Social", "Other"],
       required: function () {
         return this.role === "organizer";
       }
@@ -112,7 +113,7 @@ const userSchema = new mongoose.Schema(
       default: ""
     }
   }
- 
+
 );
 
 module.exports = mongoose.model("User",userSchema);

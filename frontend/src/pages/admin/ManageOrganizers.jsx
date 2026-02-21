@@ -7,7 +7,7 @@ export default function ManageOrganizers() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
   const [showCreate, setShowCreate] = useState(false);
-  const [createForm, setCreateForm] = useState({ organizerName: '', category: '', description: '', contact: '' });
+  const [createForm, setCreateForm] = useState({ organizerName: '', category: [], description: '', contact: '' });
   const [creating, setCreating] = useState(false);
   const [created, setCreated] = useState(null);
 
@@ -33,7 +33,7 @@ export default function ManageOrganizers() {
       const res = await API.post('/admin/organizers', createForm);
       setCreated(res.data);
       toast.success('Organizer created');
-      setCreateForm({ organizerName: '', category: '', description: '', contact: '' });
+      setCreateForm({ organizerName: '', category: [], description: '', contact: '' });
       fetchOrganizers();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to create');
@@ -103,9 +103,17 @@ export default function ManageOrganizers() {
                 </div>
                 <div>
                   <label className="block text-sm text-gray-400 mb-1">Category</label>
-                  <input type="text" value={createForm.category} onChange={(e) => setCreateForm({ ...createForm, category: e.target.value })}
-                    placeholder="e.g., Technical, Cultural"
-                    className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                  <select multiple value={createForm.category} onChange={(e) => {
+                    const values = Array.from(e.target.selectedOptions, option => option.value);
+                    setCreateForm({ ...createForm, category: values });
+                  }}
+                    className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    size="4">
+                    {["Sports", "Cultural", "Technical", "Music", "Dance", "Drama", "Art", "Literature", "Social", "Other"].map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple</p>
                 </div>
               </div>
               <div>
@@ -149,7 +157,7 @@ export default function ManageOrganizers() {
             <div key={org._id} className="bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
               <div>
                 <h3 className="text-white font-medium">{org.organizerName || org.email}</h3>
-                <p className="text-sm text-gray-400">{org.email} {org.category && `• ${org.category}`}</p>
+                <p className="text-sm text-gray-400">{org.email} {org.category && org.category.length > 0 && `• ${org.category.join(", ")}`}</p>
               </div>
               <div className="flex items-center gap-2">
                 <span className={`text-xs px-2 py-0.5 rounded-full ${org.isApproved ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}>
