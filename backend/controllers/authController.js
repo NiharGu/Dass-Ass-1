@@ -3,7 +3,7 @@ const PasswordResetRequest = require("../models/PasswordResetRequest");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-const nodemailer = require("nodemailer");
+const { sendMailWrapper } = require('../utils/email');
 
 // Register a new user (participants only)
 exports.register = async (req, res) => {
@@ -175,29 +175,7 @@ exports.forgotPassword = async (req, res) => {
         });
 
         // Send email with reset link
-        const transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 465,
-            secure: true,
-            family: 4,
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASSWORD
-            }
-        });
-
-        const sendMailAsync = async (transporter, mailOptions) => {
-            return new Promise((resolve, reject) => {
-                transporter.sendMail(mailOptions, (err, info) => {
-                    if (err) {
-                        console.error("sendMail error:", err);
-                        reject(err);
-                    } else {
-                        resolve(info);
-                    }
-                });
-            });
-        };
+        // Send email with reset link
 
         const resetUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/reset-password/${resetToken}`;
 
@@ -215,7 +193,7 @@ exports.forgotPassword = async (req, res) => {
             `
         };
 
-        await sendMailAsync(transporter, mailOptions);
+        await sendMailWrapper(mailOptions);
 
         res.status(200).json({
             message: "If an account exists with this email, a password reset link will be sent"

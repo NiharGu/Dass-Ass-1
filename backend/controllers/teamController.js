@@ -5,30 +5,7 @@ const User = require("../models/User");
 const crypto = require("crypto");
 const { v4: uuidv4 } = require("uuid");
 const QRCode = require("qrcode");
-const nodemailer = require("nodemailer");
-
-const createEmailTransporter = () => {
-    return nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 465,
-        secure: true,
-        family: 4,
-        auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASSWORD }
-    });
-};
-
-const sendMailAsync = async (transporter, mailOptions) => {
-    return new Promise((resolve, reject) => {
-        transporter.sendMail(mailOptions, (err, info) => {
-            if (err) {
-                console.error("sendMail error:", err);
-                reject(err);
-            } else {
-                resolve(info);
-            }
-        });
-    });
-};
+const { sendMailWrapper } = require('../utils/email');
 
 // Create a team for a team event
 exports.createTeam = async (req, res) => {
@@ -191,8 +168,7 @@ exports.registerTeam = async (req, res) => {
         // Send QR email to leader only
         const leader = await User.findById(req.user.userId);
         try {
-            const transporter = createEmailTransporter();
-            await sendMailAsync(transporter, {
+            await sendMailWrapper({
                 from: process.env.EMAIL_USER,
                 to: leader.email,
                 subject: `Team Registration Complete - ${event.Name}`,
@@ -217,8 +193,7 @@ exports.registerTeam = async (req, res) => {
             if (memberId.toString() === req.user.userId.toString()) continue;
             const memberUser = await User.findById(memberId);
             try {
-                const transporter = createEmailTransporter();
-                await sendMailAsync(transporter, {
+                await sendMailWrapper({
                     from: process.env.EMAIL_USER,
                     to: memberUser.email,
                     subject: `Team Registration Confirmed - ${event.Name}`,

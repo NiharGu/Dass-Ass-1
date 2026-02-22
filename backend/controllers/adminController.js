@@ -2,21 +2,7 @@ const User = require("../models/User");
 const PasswordResetRequest = require("../models/PasswordResetRequest");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
-const nodemailer = require("nodemailer");
 
-// Email transporter
-const createEmailTransporter = () => {
-  return nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-    family: 4,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD
-    }
-  });
-};
 
 // Generate random password
 const generatePassword = () => {

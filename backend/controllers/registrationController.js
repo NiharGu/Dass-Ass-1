@@ -3,39 +3,10 @@ const Event = require("../models/events");
 const User = require("../models/User");
 const { v4: uuidv4 } = require("uuid");
 const QRCode = require("qrcode");
-const nodemailer = require("nodemailer");
-
-// Email transporter setup
-const createEmailTransporter = () => {
-  return nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-    family: 4,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD
-    }
-  });
-};
-
-const sendMailAsync = async (transporter, mailOptions) => {
-  return new Promise((resolve, reject) => {
-    transporter.sendMail(mailOptions, (err, info) => {
-      if (err) {
-        console.error("sendMail error:", err);
-        reject(err);
-      } else {
-        resolve(info);
-      }
-    });
-  });
-};
-
+const { sendMailWrapper } = require('../utils/email');
 // Send ticket email with QR code
 const sendTicketEmail = async (user, event, registration, qrCodeDataURL) => {
   try {
-    const transporter = createEmailTransporter();
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -64,7 +35,7 @@ const sendTicketEmail = async (user, event, registration, qrCodeDataURL) => {
       `
     };
 
-    await sendMailAsync(transporter, mailOptions);
+    await sendMailWrapper(mailOptions);
   } catch (error) {
     console.error("Email sending failed:", error);
     // Don't throw error - registration should still succeed even if email fails
