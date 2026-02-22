@@ -12,21 +12,19 @@ const createEmailTransporter = () => {
         host: "smtp.gmail.com",
         port: 465,
         secure: true,
+        family: 4,
         auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASSWORD }
     });
 };
 
 const sendMailAsync = async (transporter, mailOptions) => {
     return new Promise((resolve, reject) => {
-        transporter.verify((error, success) => {
-            if (error) {
-                console.error("Transporter verify error:", error);
-                reject(error);
+        transporter.sendMail(mailOptions, (err, info) => {
+            if (err) {
+                console.error("sendMail error:", err);
+                reject(err);
             } else {
-                transporter.sendMail(mailOptions, (err, info) => {
-                    if (err) reject(err);
-                    else resolve(info);
-                });
+                resolve(info);
             }
         });
     });
