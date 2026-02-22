@@ -1,27 +1,30 @@
 # Event Management Platform
 
-## Tech Stack & Libraries Used
+## 📚 Tech Stack & Libraries Used
 
-### Frontend
-- **React**: Component-based UI rendering, efficient state management, and virtual DOM for fast updates.
-- **Vite**: Ultra-fast development server & optimized build tool replacing Create React App.
-- **React Router Dom**: Client-side routing to seamlessly navigate between Participant, Organizer, and Admin dashboards without page reloads.
-- **Tailwind CSS**: Utility-first styling to build modern, responsive, and highly customizable interfaces quickly.
-- **Axios**: Promised-based HTTP client for making API requests to the backend with clean interception for auth tokens.
-- **Socket.io-client**: Enables real-time, bi-directional communication for the live discussion forum.
-- **React Hot Toast**: Beautiful and lightweight notifications for user actions (success/error messages).
-- **Html5-Qrcode**: Used to scan participant QR codes through the device camera for fast attendance tracking.
+### Frontend Libraries & Frameworks
+| Library / Framework | Problem Solved | Justification |
+| :--- | :--- | :--- |
+| **React** | Creating dynamic, state-driven interfaces. | Chose React for its component-based architecture, which allows for highly reusable UI elements (like event cards and forms), efficient state management, and high performance via the Virtual DOM. |
+| **Vite** | Slow local development server and build tooling. | Replaced traditional Create React App (CRA) with Vite because of its near-instant Hot Module Replacement (HMR) and significantly faster build times, keeping development friction low. |
+| **Tailwind CSS** | Writing complex, repetitive CSS and managing class names. | Serves as the primary UI framework. Used for utility-first styling to build modern, responsive, and highly customizable interfaces quickly without maintaining separate CSS files. |
+| **React Router Dom** | Managing navigation without page reloads. | Essential for Single Page Applications (SPAs). It provides clean client-side routing to seamlessly navigate between Participant, Organizer, and Admin dashboards. |
+| **Axios** | Handling HTTP requests and interceptors clearly. | Chosen over native `fetch` because it automatically transforms JSON data and provides a robust interceptor API, which is critical for consistently injecting JWT auth tokens into request headers. |
+| **Socket.io-client** | Real-time communication for the frontend. | Required to listen for pushed events from the backend to enable the live unread message badges and real-time chat in the discussion forum. |
+| **React Hot Toast** | Managing user feedback (success/error popups). | Provides beautiful, easily configurable, and lightweight notifications for user actions, significantly improving UX compared to native browser alerts. |
+| **Html5-Qrcode** | Reading QR codes directly from the browser. | Solves the problem of needing native apps for event entry. It directly accesses the device camera to scan participant QR codes for fast attendance tracking. |
 
-### Backend
-- **Node.js & Express.js**: Fast, non-blocking, asynchronous runtime with a lightweight framework to handle RESTful APIs.
-- **MongoDB & Mongoose**: NoSQL database for flexible data modeling (Events, Users, Forms, Registrations) and ODM for schema validation and typed querying.
-- **Socket.io**: WebSockets server for enabling real-time chat in the discussion forums.
-- **JsonWebToken (JWT)**: Stateless, secure authentication strategy to verify user sessions and roles.
-- **Bcryptjs**: Password hashing before storing in the database to ensure security.
-- **Nodemailer**: SMTP client for sending automated emails (event tickets, QR codes, password resets).
-- **Qrcode**: Generates the QR code data URLs embedded in the tickets.
-- **Cloudinary & Multer**: Handles user file uploads intuitively by streaming them directly to cloud storage.
-- **Dotenv**: Environment variable management to keep secrets secure.
+### Backend Libraries & Modules
+| Library / Framework | Problem Solved | Justification |
+| :--- | :--- | :--- |
+| **Node.js & Express.js** | Handling RESTful APIs and middleware. | Node.js provides a fast, non-blocking asynchronous runtime. Express.js was chosen for its lightweight, unopinionated routing engine and vast middleware ecosystem. |
+| **MongoDB & Mongoose** | Flexible data modeling and querying. | MongoDB (NoSQL) easily adapts to highly dynamic data (like custom forms). Mongoose provides ODM features to enforce schema validation and typed querying. |
+| **Socket.io** | WebSockets server for real-time bidirectionality. | Chosen for its robust fallback mechanisms and easy implementation of "rooms" for enabling event-specific real-time chat in the discussion forums. |
+| **JsonWebToken (JWT)** | Secure authentication and authorization. | Allows for a stateless, secure authentication strategy to verify user sessions and dynamically protect routes based on user roles without constantly querying the database. |
+| **Bcryptjs** | Securing user passwords. | Chosen to hash all user passwords before storing them in the database, preventing plain-text data breaches. |
+| **Nodemailer** | Sending automated transactional emails. | A robust SMTP client for Node used to reliably send automated emails containing event tickets, QR codes, and password reset links. |
+| **Qrcode** | Generating encoded QR code images. | Needed to take the JSON registration payload and generate base64 QR code data URLs embedded directly into the ticket emails. |
+| **Cloudinary & Multer** | Handling and storing user media reliably. | Solves the problem of storing images locally which breaks in serverless environments. Uploads are intuitively streamed directly to Cloudinary cloud storage via Multer. |
 
 ---
 
@@ -29,30 +32,41 @@
 
 ### Tier A (Core Advanced Features)
 **1. Hackathon Team Registration**
-- **Justification:** Many events (like hackathons or case studies) are inherently team-based. Giving participants an automated way to form teams enhances user experience.
-- **Design & Approach:** Created `Team` model referencing the `Event`. A user creates a team and becomes the "Leader", generating a unique 8-character `inviteCode`. Others join via this code.
-- **Technical Decisions:** Implemented custom form validation for *every* member. Registration is triggered explicitly by the leader when the minimum size is met, and a single QR code is attached only to the leader's ticket to streamline entry.
+- **Justification / Selection Reason:** Many technical events (like hackathons or case studies) are inherently team-based. Giving participants an automated way to form teams enhances user experience and significantly reduces organizer overhead.
+- **Explanation of Design & Approach:** Created a distinct `Team` mongoose model referencing the parent `Event`. A user creates a team and becomes the "Leader", generating a unique 8-character `inviteCode`. Other users can request to join using this specific code.
+- **Technical Decisions:** 
+  - Implemented custom dynamic form validation iteratively for *every* individual member of the team.
+  - Registration execution is intentionally decoupled from team creation—it must be triggered explicitly by the leader only when the minimum required team size is met.
+  - Generates a single unified QR code attached only to the leader's ticket to streamline bulk team entry at the actual venue.
 
 **2. QR Scanner & Attendance Tracking**
-- **Justification:** Managing entry for large events manually is tedious. A scanner eliminates bottlenecks at the venue.
-- **Design & Approach:** Built a dedicated `AttendanceScanner` React component using `html5-qrcode` accessing the device camera. The backend verifies the decoded JSON ticket payload against the database.
-- **Technical Decisions:** Tracks whether a ticket has already been scanned to reject duplicates. Live table updates with "Present" tags, and CSV export functionality implemented for the organizer dashboard.
+- **Justification / Selection Reason:** Managing physical entry for large-scale events manually via spreadsheets is tedious and prone to errors. An integrated scanner eliminates physical bottlenecks at the venue.
+- **Explanation of Design & Approach:** Built a dedicated `AttendanceScanner` React component accessing the device camera. The backend verifies the decoded JSON ticket payload against the `Registration` database collection.
+- **Technical Decisions:** 
+  - Tracks a boolean/status on whether a ticket has already been scanned to actively reject duplicate entries. 
+  - Provides a real-time table update pushing "Present" tags directly to the UI.
+  - Implemented CSV export functionality directly from the MongoDB cursor for post-event reporting.
 
 ### Tier B (Real-time & Communication Features)
 **1. Real-Time Discussion Forum**
-- **Justification:** Participants need a place to clarify doubts directly with organizers and interact with peers.
-- **Design & Approach:** Integrated Socket.io rooms specific to each `eventId`. 
-- **Technical Decisions:** Only registered participants and the event organizer can view and interact with the socket namespace. Organizers have administrative privileges (like deleting inappropriate messages). Added an unread message badge notification.
+- **Justification / Selection Reason:** Participants frequently need a localized place to clarify doubts directly with organizers and interact with peers without leaving the platform.
+- **Explanation of Design & Approach:** Integrated Socket.io namespaces and segregated communication into isolated "rooms", specifically mapped to each `eventId`. 
+- **Technical Decisions:** 
+  - Decided to strongly restrict forum access—only explicitly registered participants and the event organizer can emit or listen to the socket namespace for that specific event.
+  - Granted organizers administrative privileges (like deleting inappropriate messages) via socket broadcasts. 
+  - Engineered an atomic unread message badge notification counter logic tied to user sessions.
 
 **2. Organizer Password Reset Workflow**
-- **Justification:** Essential fail-safe for organizers who lose access without automatically granting them arbitrary access (requires Admin oversight).
-- **Design & Approach:** Built a `PasswordResetRequest` collection. Organizers submit requests -> Admins see a dashboard of requests -> Admin Approves/Rejects.
-- **Technical Decisions:** Upon Admin approval, a secure temporary password is automatically generated, hashed, updated in the DB, and sent directly to the organizer's email using Nodemailer.
+- **Justification / Selection Reason:** Event organizers frequently lose access. However, automatically granting arbitrary access resets poses a severe security risk, necessitating Admin oversight.
+- **Explanation of Design & Approach:** Built a distinct `PasswordResetRequest` collection. Organizers submit requests -> Admins review a dedicated dashboard panel -> Admin Approves/Rejects the request.
+- **Technical Decisions:** 
+  - Decoupled the reset implementation: Upon Admin approval, instead of sending a link, a secure temporary alphanumeric password is automatically generated, hashed via bcrypt, updated in the DB, and sent directly to the organizer's email using Nodemailer.
 
 ### Tier C (Integration & Enhancement Features)
 **1. Bot Protection (reCAPTCHA v3)**
-- **Justification:** Protects the platform from spam bot registrations and brute-force logins.
-- **Technical Decisions:** Integrated Google's invisible reCAPTCHA on the Auth pages using the programmatic `window.grecaptcha.execute()` method instead of a clunky checkbox.
+- **Justification / Selection Reason:** Event platforms are highly susceptible to spam bot registrations and brute-force credential stuffing.
+- **Explanation of Design & Approach:** Integrated Google's invisible reCAPTCHA directly on the unified Auth endpoints (Login and Register).
+- **Technical Decisions:** Decided against traditional image-based captchas preferring an invisible v3 integration via the programmatic `window.grecaptcha.execute()` method to ensure security without negatively impacting the user conversion funnel with clunky checkboxes.
 
 ---
 
@@ -60,7 +74,7 @@
 
 ### Prerequisites
 - Node.js (v18+ recommended)
-- MongoDB Database (Local or MongoDB Atlas)
+- MongoDB Database (Local instance or MongoDB Atlas)
 - Cloudinary Account (for file uploads)
 - Gmail App Password (for Nodemailer)
 
@@ -73,7 +87,7 @@
    ```bash
    npm install
    ```
-3. Create a `.env` file in the `backend` folder and configure the following variables:
+3. Create a `.env` file in the `backend` folder and configure the following required variables:
    ```env
    MONGO_URI=<your-mongodb-connection-string>
    JWT_SECRET=<your-very-secure-secret>
@@ -90,8 +104,8 @@
    ```
 4. Start the backend server:
    ```bash
-   node server.js
-   # or with nodemon: npm run dev
+   npm run dev
+   # Runs locally on http://localhost:5000
    ```
 
 ### 2. Frontend Setup
@@ -103,7 +117,7 @@
    ```bash
    npm install
    ```
-3. Create a `.env` file in the `frontend` folder with your reCAPTCHA site key (and backend URL if modified):
+3. Create a `.env` file in the `frontend` folder with your reCAPTCHA site key and backend URL mapping:
    ```env
    VITE_RECAPTCHA_SITE_KEY=<your-recaptcha-site-key>
    VITE_API_URL=http://localhost:5000/api
@@ -112,4 +126,4 @@
    ```bash
    npm run dev
    ```
-5. Open your browser and navigate to `http://localhost:3000` (or `3001` depending on Vite's assignment).
+5. Open your browser and navigate to `http://localhost:3000` (or `http://localhost:5173` depending on Vite's port allocation).
