@@ -9,7 +9,9 @@ const nodemailer = require("nodemailer");
 
 const createEmailTransporter = () => {
     return nodemailer.createTransport({
-        service: "gmail",
+        host: "smtp.gmail.com",
+        port: 587,
+        secure: false,
         family: 4,
         auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASSWORD }
     });
@@ -123,47 +125,99 @@ exports.registerTeam = async (req, res) => {
         // Mark team as complete
         team.status = "complete";
         await team.save();
-
-        // Register all members
+        // Validate required custom form fields
         const event = await Event.findById(team.event._id);
+        const leaderFormResponses = req.body.formResponses || {};
+        if (event.customForm && event.customForm.length > 0) {
+            for (const field of event.customForm) {
+                if (field.required) {
+                    const val = leaderFormResponses[field.name];
+                    if (val === undefined || val === null || val === '' || val === false) {
+                        // Revert team status
+                        team.status = "forming";
+                        await team.save();
+                        return res.status(400).json({ message: `Required field missing: ${field.label || field.name}` });
+                    }
+                }
+            }
+        }
+
+        // Generate ONE team ticket and QR code
+        const teamTicketId = uuidv4();
+        const qrData = {
+            ticketId: teamTicketId, eventId: event._id, eventName: event.Name,
+            teamId: team._id, teamName: team.name,
+            leaderId: req.user.userId,
+            memberCount: team.members.length
+        };
+        const qrCodeDataURL = await QRCode.toDataURL(JSON.stringify(qrData));
+
+        // Register all members (only leader gets the QR)
+        const memberNames = [];
         for (const member of team.members) {
             const memberId = member._id || member;
-            const user = await User.findById(memberId);
+            const memberUser = await User.findById(memberId);
+            memberNames.push(memberUser.firstName || memberUser.email);
+
             const existingReg = await Registration.findOne({
                 participant: memberId, event: event._id, status: "registered"
             });
             if (existingReg) continue;
 
-            const ticketId = uuidv4();
-            const qrData = {
-                ticketId, eventId: event._id, eventName: event.Name,
-                participantId: memberId, teamId: team._id, teamName: team.name
-            };
-            const qrCodeDataURL = await QRCode.toDataURL(JSON.stringify(qrData));
+            const isLeader = memberId.toString() === req.user.userId.toString();
 
             await Registration.create({
-                participant: memberId, event: event._id, ticketId,
-                formResponses: {}, merchandiseSelections: [], qrCode: qrCodeDataURL
+                participant: memberId, event: event._id,
+                ticketId: isLeader ? teamTicketId : uuidv4(),
+                formResponses: isLeader ? leaderFormResponses : {},
+                merchandiseSelections: [],
+                qrCode: isLeader ? qrCodeDataURL : null
             });
+        }
 
-            // Send email
+        // Send QR email to leader only
+        const leader = await User.findById(req.user.userId);
+        try {
+            const transporter = createEmailTransporter();
+            await transporter.sendMail({
+                from: process.env.EMAIL_USER,
+                to: leader.email,
+                subject: `Team Registration Complete - ${event.Name}`,
+                html: `
+          <h2>Team Registration Complete!</h2>
+          <p>Dear ${leader.firstName},</p>
+          <p>Your team <strong>${team.name}</strong> has been registered for <strong>${event.Name}</strong>.</p>
+          <p><strong>Team Members:</strong> ${memberNames.join(", ")}</p>
+          <p><strong>Team Ticket ID:</strong> ${teamTicketId}</p>
+          <h3>Team QR Code:</h3>
+          <img src="${qrCodeDataURL}" alt="QR Code" style="width:200px;height:200px;"/>
+          <p>Present this single QR code at the venue for your entire team.</p>
+        `
+            });
+        } catch (e) {
+            console.error("Team email failed:", e.message);
+        }
+
+        // Send simple confirmation to other members (no QR)
+        for (const member of team.members) {
+            const memberId = member._id || member;
+            if (memberId.toString() === req.user.userId.toString()) continue;
+            const memberUser = await User.findById(memberId);
             try {
                 const transporter = createEmailTransporter();
                 await transporter.sendMail({
                     from: process.env.EMAIL_USER,
-                    to: user.email,
-                    subject: `Team Registration Complete - ${event.Name}`,
+                    to: memberUser.email,
+                    subject: `Team Registration Confirmed - ${event.Name}`,
                     html: `
-          <h2>Team Registration Complete!</h2>
-          <p>Dear ${user.firstName},</p>
-          <p>Your team <strong>${team.name}</strong> has been registered for <strong>${event.Name}</strong>.</p>
-          <p><strong>Ticket ID:</strong> ${ticketId}</p>
-          <img src="${qrCodeDataURL}" alt="QR Code" style="width:200px;height:200px;"/>
-          <p>Present this QR code at the venue.</p>
-        `
+            <h2>You're Registered!</h2>
+            <p>Dear ${memberUser.firstName},</p>
+            <p>Your team <strong>${team.name}</strong> has been registered for <strong>${event.Name}</strong>.</p>
+            <p>Your team leader <strong>${leader.firstName}</strong> has the QR code for entry.</p>
+          `
                 });
             } catch (e) {
-                console.error("Team email failed:", e.message);
+                console.error("Team member email failed:", e.message);
             }
         }
 

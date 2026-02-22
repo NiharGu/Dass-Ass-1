@@ -106,7 +106,7 @@ export default function OrganizerEventDetail() {
         <div className="flex gap-2">
           {event.status === 'draft' && (
             <>
-              <button onClick={handlePublish} className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm cursor-pointer transition">Publish</button>
+              <button onClick={handlePublish} className="px-4 py-2 bg-[#059669] hover:bg-[#047857] text-white rounded-lg text-sm cursor-pointer transition">Publish</button>
               <button
                 onClick={async () => {
                   if (!window.confirm("Are you sure you want to delete this draft event?")) return;
@@ -118,14 +118,14 @@ export default function OrganizerEventDetail() {
                     toast.error(err.response?.data?.message || "Failed to delete event");
                   }
                 }}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm cursor-pointer transition"
+                className="px-4 py-2 bg-[#e11d48] hover:bg-[#be123c] text-white rounded-lg text-sm cursor-pointer transition"
               >Delete</button>
             </>
           )}
           {event.status === 'published' && (
             <>
               <button onClick={() => navigate(`/organizer/events/${id}/attendance`)} className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm cursor-pointer transition">📷 Attendance</button>
-              <button onClick={handleClose} className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm cursor-pointer transition">Close</button>
+              <button onClick={handleClose} className="px-4 py-2 bg-[#e11d48] hover:bg-[#be123c] text-white rounded-lg text-sm cursor-pointer transition">Close</button>
             </>
           )}
           {(event.status === 'draft' || event.status === 'published') && (
@@ -139,7 +139,7 @@ export default function OrganizerEventDetail() {
         {['overview', 'participants', 'analytics', 'forum'].map(t => (
           <button key={t} onClick={() => setTab(t)}
             className={`flex-1 py-2 rounded-md text-sm font-medium cursor-pointer transition ${tab === t ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'}`}>
-            {t === 'forum' ? '💬 Forum' : t.charAt(0).toUpperCase() + t.slice(1)}
+            {t === 'forum' ? 'Forum' : t.charAt(0).toUpperCase() + t.slice(1)}
           </button>
         ))}
       </div>
@@ -202,7 +202,7 @@ export default function OrganizerEventDetail() {
               <option value="registered">Registered</option>
               <option value="cancelled">Cancelled</option>
             </select>
-            <button onClick={handleExportCSV} className="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg cursor-pointer transition whitespace-nowrap">
+            <button onClick={handleExportCSV} className="px-4 py-2.5 bg-[#059669] hover:bg-[#047857] text-white text-sm rounded-lg cursor-pointer transition whitespace-nowrap">
               Export CSV
             </button>
           </div>
@@ -232,7 +232,7 @@ export default function OrganizerEventDetail() {
                     <td className="px-4 py-3 text-[#818cf8] text-sm">{p.teamName || '—'}</td>
                     <td className="px-4 py-3">
                       <span className={`text-xs px-2 py-0.5 rounded-full ${p.attended ? 'bg-green-900 text-green-300' : 'bg-gray-800 text-gray-500'}`}>
-                        {p.attended ? '✓ Present' : 'Absent'}
+                        {p.attended ? 'Present' : 'Absent'}
                       </span>
                     </td>
                     <td className="px-4 py-3">

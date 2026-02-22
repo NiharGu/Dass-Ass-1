@@ -220,13 +220,13 @@ export default function AttendanceScanner() {
                         <div className={`border rounded-2xl p-4 ${scanResult.success ? 'bg-[#065f46]/15 border-[#065f46]/40' : 'bg-[#7f1d1d]/15 border-[#7f1d1d]/40'}`}>
                             {scanResult.success ? (
                                 <div>
-                                    <p className="text-[#34d399] font-medium">✓ {scanResult.data.message}</p>
+                                    <p className="text-[#34d399] font-medium">{scanResult.data.message}</p>
                                     <p className="text-[#8b8fad] text-sm mt-1">
                                         {scanResult.data.participant?.name} — {scanResult.data.participant?.email}
                                     </p>
                                 </div>
                             ) : (
-                                <p className="text-[#f87171] font-medium">✗ {scanResult.message}</p>
+                                <p className="text-[#f87171] font-medium">{scanResult.message}</p>
                             )}
                         </div>
                     )}

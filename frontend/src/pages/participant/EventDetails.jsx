@@ -72,8 +72,24 @@ export default function EventDetails() {
     }
   };
 
+  // Validate required custom form fields
+  const validateFormFields = () => {
+    if (!event?.customForm?.length) return true;
+    for (const field of event.customForm) {
+      if (field.required) {
+        const val = formResponses[field.name];
+        if (val === undefined || val === null || val === '' || val === false) {
+          toast.error(`Please fill the required field: ${field.label || field.name}`);
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
   const handleRegister = async () => {
     if (!user) return navigate('/login');
+    if (!validateFormFields()) return;
     setRegistering(true);
     try {
       const body = {};
@@ -177,7 +193,7 @@ export default function EventDetails() {
         {/* Registration Status */}
         {myRegistration && (
           <div className="bg-[#065f46]/10 border border-[#065f46]/30 rounded-xl p-4 mb-6">
-            <p className="text-[#34d399] font-medium text-sm">✓ You are registered</p>
+            <p className="text-[#34d399] font-medium text-sm">You are registered</p>
             <div className="flex flex-wrap gap-4 mt-2 text-xs text-[#8b8fad]">
               <span>Status: <span className="text-[#34d399] capitalize">{myRegistration.status}</span></span>
               {myRegistration.teamName && <span>Team: <span className="text-[#818cf8]">{myRegistration.teamName}</span></span>}
@@ -218,7 +234,7 @@ export default function EventDetails() {
         )}
 
         {/* Custom Form */}
-        {event.Type === 'normal' && event.customForm?.length > 0 && isPublished && !deadlinePassed && user?.role === 'participant' && (
+        {event.customForm?.length > 0 && isPublished && !deadlinePassed && user?.role === 'participant' && !myRegistration && (
           <div className="border-t border-[#1e2030] pt-6 mb-6">
             <h2 className="text-base font-semibold text-white mb-4">Registration Form</h2>
             <div className="space-y-4">
@@ -261,7 +277,7 @@ export default function EventDetails() {
                       </div>
                       {formResponses[field.name] && (
                         <p className="text-xs text-[#34d399] mt-1.5">
-                          ✓ Uploaded — <a href={formResponses[field.name]} target="_blank" rel="noopener noreferrer" className="underline hover:text-[#6ee7b7]">View file</a>
+                          Uploaded — <a href={formResponses[field.name]} target="_blank" rel="noopener noreferrer" className="underline hover:text-[#6ee7b7]">View file</a>
                         </p>
                       )}
                     </div>
@@ -328,7 +344,7 @@ export default function EventDetails() {
                         <div className="flex items-center gap-2">
                           <code className="text-[#818cf8] font-mono text-lg font-bold tracking-widest">{myTeam.inviteCode}</code>
                           <button onClick={() => { navigator.clipboard.writeText(myTeam.inviteCode); toast.success('Code copied!'); }}
-                            className="text-xs text-[#6b7394] hover:text-white cursor-pointer transition">📋 Copy</button>
+                            className="text-xs text-[#6b7394] hover:text-white cursor-pointer transition">Copy</button>
                         </div>
                         <p className="text-[10px] text-[#3d4162] mt-1">Share this code with teammates to join</p>
                       </div>
@@ -344,7 +360,7 @@ export default function EventDetails() {
                           <div key={m._id} className="flex items-center justify-between text-sm py-1.5 px-3 bg-[#12141d] rounded-lg">
                             <span className="text-white">{m.firstName} {m.lastName}</span>
                             <span className="text-[10px] text-[#3d4162]">
-                              {m._id === (myTeam.leader?._id || myTeam.leader) ? '👑 Leader' : 'Member'}
+                              {m._id === (myTeam.leader?._id || myTeam.leader) ? 'Leader' : 'Member'}
                             </span>
                           </div>
                         ))}
@@ -356,9 +372,10 @@ export default function EventDetails() {
                       <div className="flex gap-2">
                         <button
                           onClick={async () => {
+                            if (!validateFormFields()) return;
                             setTeamLoading(true);
                             try {
-                              await API.post(`/teams/${myTeam._id}/register`);
+                              await API.post(`/teams/${myTeam._id}/register`, { formResponses });
                               toast.success('Team registered! Check email for tickets.');
                               // Refresh data
                               const [regRes, teamRes] = await Promise.all([
@@ -417,11 +434,11 @@ export default function EventDetails() {
                       <div className="flex gap-3">
                         <button onClick={() => setTeamMode('create')}
                           className="flex-1 py-3 bg-[#6366f1] hover:bg-[#818cf8] text-white font-medium rounded-xl cursor-pointer transition-all text-sm">
-                          🛡️ Create Team
+                          Create Team
                         </button>
                         <button onClick={() => setTeamMode('join')}
                           className="flex-1 py-3 bg-[#0c0e14] border border-[#1e2030] hover:border-[#6366f1] text-white font-medium rounded-xl cursor-pointer transition-all text-sm">
-                          🔗 Join Team
+                          Join Team
                         </button>
                       </div>
                     ) : teamMode === 'create' ? (
@@ -497,7 +514,7 @@ export default function EventDetails() {
         <div className="mt-6">
           <button onClick={() => { setShowForum(!showForum); setUnreadCount(0); }}
             className="w-full py-3 bg-[#12141d] border border-[#1e2030] hover:border-[#2a2d48] text-white font-medium rounded-2xl cursor-pointer transition-all text-sm relative">
-            {showForum ? 'Hide Discussion' : '💬 Discussion Forum'}
+            {showForum ? 'Hide Discussion' : 'Discussion Forum'}
             {!showForum && unreadCount > 0 && (
               <span className="absolute -top-2 -right-2 min-w-[20px] h-5 px-1.5 flex items-center justify-center bg-[#6366f1] text-white text-xs font-bold rounded-full animate-pulse">
                 {unreadCount}
@@ -514,7 +531,6 @@ export default function EventDetails() {
                     setUnreadCount(prev => prev + 1);
                     const authorName = msg.author?.firstName || msg.author?.organizerName || 'Someone';
                     toast(`${authorName}: ${msg.content.substring(0, 50)}${msg.content.length > 50 ? '...' : ''}`, {
-                      icon: '💬',
                       duration: 3000,
                       style: { background: '#12141d', color: '#e2e4ef', border: '1px solid #1e2030' }
                     });

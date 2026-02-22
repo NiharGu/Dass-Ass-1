@@ -144,7 +144,7 @@ export default function BrowseEvents() {
               {user && (myRegs[ev._id] || myTeams[ev._id]) && (
                 <div className="flex gap-2 mt-3 flex-wrap">
                   {myRegs[ev._id] === 'registered' && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#065f46]/30 text-[#34d399] font-medium">✓ Registered</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#065f46]/30 text-[#34d399] font-medium">Registered</span>
                   )}
                   {myRegs[ev._id] === 'cancelled' && (
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#7f1d1d]/30 text-[#f87171] font-medium">Cancelled</span>

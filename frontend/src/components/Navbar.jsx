@@ -56,7 +56,7 @@ export default function Navbar() {
             ))}
             <div className="w-px h-5 bg-[#1e2030] mx-2" />
             <button onClick={logout}
-              className="px-3 py-1.5 rounded-lg text-[13px] font-medium text-[#f87171] hover:bg-red-500/10 cursor-pointer transition-all">
+              className="px-3 py-1.5 rounded-lg text-[13px] font-medium text-[#ef4444] hover:bg-[#7f1d1d]/20 cursor-pointer transition-all">
               Logout
             </button>
           </div>
@@ -75,7 +75,7 @@ export default function Navbar() {
               </Link>
             ))}
             <button onClick={() => { logout(); setOpen(false); }}
-              className="block w-full text-left px-3 py-2 text-sm text-[#f87171] hover:bg-red-500/10 rounded-lg cursor-pointer">
+              className="block w-full text-left px-3 py-2 text-sm text-[#ef4444] hover:bg-[#7f1d1d]/20 rounded-lg cursor-pointer">
               Logout
             </button>
           </div>

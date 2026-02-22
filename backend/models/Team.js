@@ -8,6 +8,11 @@ const teamSchema = new mongoose.Schema(
         maxSize: { type: Number, required: true, min: 2 },
         members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
         inviteCode: { type: String, unique: true, required: true },
+        memberFormResponses: {
+            type: Map,
+            of: Object,
+            default: {}
+        },
         status: {
             type: String,
             enum: ["forming", "complete", "cancelled"],

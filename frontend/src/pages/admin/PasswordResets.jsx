@@ -112,11 +112,11 @@ export default function PasswordResets() {
                 {req.status === 'pending' && (
                   <div className="flex flex-col gap-2 ml-4 shrink-0">
                     <button onClick={() => handleApprove(req.user?._id, req._id)}
-                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg cursor-pointer transition">
+                      className="px-4 py-2 bg-[#059669] hover:bg-[#047857] text-white text-sm rounded-lg cursor-pointer transition">
                       Approve
                     </button>
                     <button onClick={() => handleReject(req.user?._id, req._id)}
-                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg cursor-pointer transition">
+                      className="px-4 py-2 bg-[#e11d48] hover:bg-[#be123c] text-white text-sm rounded-lg cursor-pointer transition">
                       Reject
                     </button>
                   </div>

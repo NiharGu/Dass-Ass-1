@@ -33,7 +33,6 @@ export default function ForgotPassword() {
         {sent ? (
           <div className="text-center">
             <p className="text-[#34d399] mb-4">Check your email for the reset link.</p>
-            <Link to="/login" className="text-[#818cf8] hover:text-[#a5b4fc] text-sm transition">Back to login</Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
