@@ -116,34 +116,7 @@ export default function EventDetails() {
     setMerchSelections(prev => prev.map((s, i) => i === idx ? { ...s, quantity: Math.max(0, qty) } : s));
   };
 
-  const handleDownloadICS = async () => {
-    if (!myRegistration) return toast.error('You must be registered to add to calendar');
-    try {
-      const res = await API.get(`/registration/${myRegistration._id}/calendar`, { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `${event.Name}.ics`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      toast.success('Calendar file downloaded');
-    } catch { toast.error('Failed to download calendar file'); }
-  };
 
-  const getGoogleCalendarUrl = () => {
-    if (!event) return '';
-    const start = new Date(event.StartDate).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-    const end = new Date(event.EndDate).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
-    return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.Name)}&dates=${start}/${end}&details=${encodeURIComponent(event.Description.substring(0, 200))}`;
-  };
-
-  const getOutlookCalendarUrl = () => {
-    if (!event) return '';
-    const start = new Date(event.StartDate).toISOString();
-    const end = new Date(event.EndDate).toISOString();
-    return `https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodeURIComponent(event.Name)}&startdt=${start}&enddt=${end}&body=${encodeURIComponent(event.Description.substring(0, 200))}`;
-  };
 
   const inputClass = "w-full px-4 py-2.5 bg-[#0c0e14] border border-[#1e2030] rounded-xl text-white placeholder-[#3d4162] focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]/30";
 
@@ -212,26 +185,7 @@ export default function EventDetails() {
           </div>
         )}
 
-        {/* Calendar */}
-        {myRegistration && (
-          <div className="border-t border-[#1e2030] pt-4 mb-6">
-            <p className="text-xs text-[#6b7394] mb-2 uppercase tracking-wider font-medium">Add to Calendar</p>
-            <div className="flex gap-2 flex-wrap">
-              <button onClick={handleDownloadICS}
-                className="px-3 py-1.5 bg-[#0c0e14] border border-[#1e2030] hover:border-[#3d4162] text-[#8b8fad] text-xs rounded-lg cursor-pointer transition-all">
-                📅 .ics
-              </button>
-              <a href={getGoogleCalendarUrl()} target="_blank" rel="noopener noreferrer"
-                className="px-3 py-1.5 bg-[#0c0e14] border border-[#1e2030] hover:border-[#3d4162] text-[#8b8fad] text-xs rounded-lg transition-all">
-                Google
-              </a>
-              <a href={getOutlookCalendarUrl()} target="_blank" rel="noopener noreferrer"
-                className="px-3 py-1.5 bg-[#0c0e14] border border-[#1e2030] hover:border-[#3d4162] text-[#8b8fad] text-xs rounded-lg transition-all">
-                Outlook
-              </a>
-            </div>
-          </div>
-        )}
+
 
         {/* Custom Form */}
         {event.customForm?.length > 0 && isPublished && !deadlinePassed && user?.role === 'participant' && !myRegistration && (

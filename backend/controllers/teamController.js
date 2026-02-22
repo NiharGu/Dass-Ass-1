@@ -10,10 +10,25 @@ const nodemailer = require("nodemailer");
 const createEmailTransporter = () => {
     return nodemailer.createTransport({
         host: "smtp.gmail.com",
-        port: 587,
-        secure: false,
-        family: 4,
+        port: 465,
+        secure: true,
         auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASSWORD }
+    });
+};
+
+const sendMailAsync = async (transporter, mailOptions) => {
+    return new Promise((resolve, reject) => {
+        transporter.verify((error, success) => {
+            if (error) {
+                console.error("Transporter verify error:", error);
+                reject(error);
+            } else {
+                transporter.sendMail(mailOptions, (err, info) => {
+                    if (err) reject(err);
+                    else resolve(info);
+                });
+            }
+        });
     });
 };
 
@@ -179,7 +194,7 @@ exports.registerTeam = async (req, res) => {
         const leader = await User.findById(req.user.userId);
         try {
             const transporter = createEmailTransporter();
-            await transporter.sendMail({
+            await sendMailAsync(transporter, {
                 from: process.env.EMAIL_USER,
                 to: leader.email,
                 subject: `Team Registration Complete - ${event.Name}`,
@@ -205,7 +220,7 @@ exports.registerTeam = async (req, res) => {
             const memberUser = await User.findById(memberId);
             try {
                 const transporter = createEmailTransporter();
-                await transporter.sendMail({
+                await sendMailAsync(transporter, {
                     from: process.env.EMAIL_USER,
                     to: memberUser.email,
                     subject: `Team Registration Confirmed - ${event.Name}`,

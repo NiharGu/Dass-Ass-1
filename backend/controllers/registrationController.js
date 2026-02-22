@@ -9,13 +9,28 @@ const nodemailer = require("nodemailer");
 const createEmailTransporter = () => {
   return nodemailer.createTransport({
     host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
-    family: 4,
+    port: 465,
+    secure: true,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASSWORD
     }
+  });
+};
+
+const sendMailAsync = async (transporter, mailOptions) => {
+  return new Promise((resolve, reject) => {
+    transporter.verify((error, success) => {
+      if (error) {
+        console.error("Transporter verify error:", error);
+        reject(error);
+      } else {
+        transporter.sendMail(mailOptions, (err, info) => {
+          if (err) reject(err);
+          else resolve(info);
+        });
+      }
+    });
   });
 };
 
@@ -51,7 +66,7 @@ const sendTicketEmail = async (user, event, registration, qrCodeDataURL) => {
       `
     };
 
-    await transporter.sendMail(mailOptions);
+    await sendMailAsync(transporter, mailOptions);
   } catch (error) {
     console.error("Email sending failed:", error);
     // Don't throw error - registration should still succeed even if email fails

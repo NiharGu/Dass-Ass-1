@@ -177,14 +177,29 @@ exports.forgotPassword = async (req, res) => {
         // Send email with reset link
         const transporter = nodemailer.createTransport({
             host: "smtp.gmail.com",
-            port: 587,
-            secure: false,
-            family: 4,
+            port: 465,
+            secure: true,
             auth: {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASSWORD
             }
         });
+
+        const sendMailAsync = async (transporter, mailOptions) => {
+            return new Promise((resolve, reject) => {
+                transporter.verify((error, success) => {
+                    if (error) {
+                        console.error("Transporter verify error:", error);
+                        reject(error);
+                    } else {
+                        transporter.sendMail(mailOptions, (err, info) => {
+                            if (err) reject(err);
+                            else resolve(info);
+                        });
+                    }
+                });
+            });
+        };
 
         const resetUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/reset-password/${resetToken}`;
 
@@ -202,7 +217,7 @@ exports.forgotPassword = async (req, res) => {
             `
         };
 
-        await transporter.sendMail(mailOptions);
+        await sendMailAsync(transporter, mailOptions);
 
         res.status(200).json({
             message: "If an account exists with this email, a password reset link will be sent"

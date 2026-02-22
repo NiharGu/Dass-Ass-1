@@ -54,8 +54,8 @@ export default function ParticipantDashboard() {
         {TABS.map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
             className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap cursor-pointer transition-all ${tab === t.key
-                ? 'bg-[#6366f1] text-white shadow-lg shadow-[#6366f1]/20'
-                : 'bg-[#12141d] text-[#6b7394] hover:bg-[#1e2030] border border-[#1e2030]'
+              ? 'bg-[#6366f1] text-white shadow-lg shadow-[#6366f1]/20'
+              : 'bg-[#12141d] text-[#6b7394] hover:bg-[#1e2030] border border-[#1e2030]'
               }`}>
             {t.label}
           </button>
@@ -104,23 +104,7 @@ export default function ParticipantDashboard() {
                     }`}>
                     {reg.status}
                   </span>
-                  {reg.status === 'registered' && (
-                    <button onClick={async () => {
-                      try {
-                        const res = await API.get(`/registration/${reg._id}/calendar`, { responseType: 'blob' });
-                        const url = window.URL.createObjectURL(new Blob([res.data]));
-                        const link = document.createElement('a');
-                        link.href = url;
-                        link.setAttribute('download', `${reg.event?.Name || 'event'}.ics`);
-                        document.body.appendChild(link);
-                        link.click();
-                        link.remove();
-                      } catch { toast.error('Failed to download calendar'); }
-                    }}
-                      className="text-xs text-[#60a5fa] hover:text-[#93c5fd] cursor-pointer" title="Add to Calendar">
-                      📅
-                    </button>
-                  )}
+
                   {reg.status === 'registered' && tab !== 'completed' && (
                     <button onClick={() => cancelRegistration(reg._id)}
                       className="text-xs text-[#f87171] hover:text-[#fca5a5] cursor-pointer">
