@@ -13,7 +13,7 @@ const getSocketUrl = () => {
     return apiUrl.replace(/\/api\/?$/, '');
 };
 
-export default function DiscussionForum({ eventId, isOrganizer }) {
+export default function DiscussionForum({ eventId, isOrganizer, onNewMessage }) {
     const [messages, setMessages] = useState([]);
     const [newMsg, setNewMsg] = useState('');
     const [replyTo, setReplyTo] = useState(null);
@@ -35,10 +35,13 @@ export default function DiscussionForum({ eventId, isOrganizer }) {
 
         socket.on('newMessage', (msg) => {
             setMessages(prev => {
-                // Avoid duplicates if we already fetched it
                 if (prev.some(m => m._id === msg._id)) return prev;
                 return [...prev, msg];
             });
+            // Notify parent about new message (for badge/notification)
+            if (msg.author?._id !== user?.id && onNewMessage) {
+                onNewMessage(msg);
+            }
         });
 
         socket.on('messageDeleted', (msgId) => {
@@ -242,7 +245,7 @@ function MessageBubble({ msg, isOrganizer, isMine, onDelete, onPin, onReact, onR
                     <button onClick={() => setShowReactions(!showReactions)} className="text-gray-500 hover:text-white text-xs cursor-pointer">😀</button>
                     {!isReply && <button onClick={() => onReply()} className="text-gray-500 hover:text-white text-xs cursor-pointer">↩</button>}
                     {isOrganizer && <button onClick={() => onPin(msg._id)} className="text-gray-500 hover:text-yellow-400 text-xs cursor-pointer">📌</button>}
-                    {(isOrganizer || isMine) && <button onClick={() => onDelete(msg._id)} className="text-gray-500 hover:text-red-400 text-xs cursor-pointer">🗑</button>}
+                    {isOrganizer && <button onClick={() => onDelete(msg._id)} className="text-gray-500 hover:text-red-400 text-xs cursor-pointer">🗑</button>}
                 </div>
             </div>
 

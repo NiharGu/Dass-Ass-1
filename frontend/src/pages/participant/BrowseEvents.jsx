@@ -9,6 +9,8 @@ export default function BrowseEvents() {
   const [search, setSearch] = useState('');
   const [filters, setFilters] = useState({ eventType: '', eligibility: '', startDate: '', endDate: '', followedClubs: false });
   const [loading, setLoading] = useState(true);
+  const [myRegs, setMyRegs] = useState({});
+  const [myTeams, setMyTeams] = useState({});
   const { user } = useAuth();
 
   const fetchEvents = () => {
@@ -31,6 +33,23 @@ export default function BrowseEvents() {
   useEffect(() => {
     fetchEvents();
     API.get('/events/trending').then(res => setTrending(res.data)).catch(() => { });
+
+    if (user) {
+      API.get('/registration/my-registrations').then(res => {
+        const regMap = {};
+        (res.data || []).forEach(r => { regMap[r.event?._id || r.event] = r.status; });
+        setMyRegs(regMap);
+      }).catch(() => { });
+
+      API.get('/teams/my-teams').then(res => {
+        const teamMap = {};
+        (res.data || []).forEach(t => {
+          const evId = t.event?._id || t.event;
+          teamMap[evId] = t.name;
+        });
+        setMyTeams(teamMap);
+      }).catch(() => { });
+    }
   }, []);
 
   useEffect(() => {
@@ -121,6 +140,20 @@ export default function BrowseEvents() {
                 {ev.registrationFee > 0 && <span className="text-[#818cf8]">₹{ev.registrationFee}</span>}
                 {ev.registrationFee === 0 && <span className="text-[#34d399]">Free</span>}
               </div>
+              {/* Participation status & team name */}
+              {user && (myRegs[ev._id] || myTeams[ev._id]) && (
+                <div className="flex gap-2 mt-3 flex-wrap">
+                  {myRegs[ev._id] === 'registered' && (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#065f46]/30 text-[#34d399] font-medium">✓ Registered</span>
+                  )}
+                  {myRegs[ev._id] === 'cancelled' && (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#7f1d1d]/30 text-[#f87171] font-medium">Cancelled</span>
+                  )}
+                  {myTeams[ev._id] && (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#312e81]/30 text-[#818cf8] font-medium">Team: {myTeams[ev._id]}</span>
+                  )}
+                </div>
+              )}
             </Link>
           ))}
         </div>

@@ -213,18 +213,28 @@ export default function OrganizerEventDetail() {
                 <tr className="border-b border-gray-800 text-gray-400 text-left">
                   <th className="px-4 py-3">Name</th>
                   <th className="px-4 py-3">Email</th>
-                  <th className="px-4 py-3">Ticket ID</th>
+                  <th className="px-4 py-3">Reg Date</th>
+                  <th className="px-4 py-3">Payment</th>
+                  <th className="px-4 py-3">Team</th>
+                  <th className="px-4 py-3">Attendance</th>
                   <th className="px-4 py-3">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredParticipants.length === 0 ? (
-                  <tr><td colSpan={4} className="px-4 py-8 text-center text-gray-500">No participants found</td></tr>
+                  <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-500">No participants found</td></tr>
                 ) : filteredParticipants.map(p => (
                   <tr key={p.registrationId} className="border-b border-gray-800 hover:bg-gray-800/50">
                     <td className="px-4 py-3 text-white">{p.participantName}</td>
                     <td className="px-4 py-3 text-gray-300">{p.participantEmail}</td>
-                    <td className="px-4 py-3 text-gray-400 font-mono text-xs">{p.ticketId}</td>
+                    <td className="px-4 py-3 text-gray-400 text-xs">{new Date(p.registrationDate).toLocaleDateString()}</td>
+                    <td className="px-4 py-3 text-[#fbbf24] text-sm">₹{p.payment || 0}</td>
+                    <td className="px-4 py-3 text-[#818cf8] text-sm">{p.teamName || '—'}</td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${p.attended ? 'bg-green-900 text-green-300' : 'bg-gray-800 text-gray-500'}`}>
+                        {p.attended ? '✓ Present' : 'Absent'}
+                      </span>
+                    </td>
                     <td className="px-4 py-3">
                       <span className={`text-xs px-2 py-0.5 rounded-full ${p.status === 'registered' ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}>
                         {p.status}
@@ -242,15 +252,31 @@ export default function OrganizerEventDetail() {
       {tab === 'analytics' && (
         <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
           {analytics ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div className="bg-gray-800 rounded-xl p-4 text-center">
                 <p className="text-2xl font-bold text-white">{analytics.totalRegistrations}</p>
                 <p className="text-xs text-gray-400 mt-1">Registrations</p>
               </div>
               <div className="bg-gray-800 rounded-xl p-4 text-center">
-                <p className="text-2xl font-bold text-white">₹{analytics.totalRevenue}</p>
+                <p className="text-2xl font-bold text-[#c084fc]">{analytics.attendance || 0}</p>
+                <p className="text-xs text-gray-400 mt-1">Attendance</p>
+              </div>
+              <div className="bg-gray-800 rounded-xl p-4 text-center">
+                <p className="text-2xl font-bold text-[#fbbf24]">₹{analytics.revenue}</p>
                 <p className="text-xs text-gray-400 mt-1">Revenue</p>
               </div>
+              {event.isTeamEvent && (
+                <>
+                  <div className="bg-gray-800 rounded-xl p-4 text-center">
+                    <p className="text-2xl font-bold text-[#34d399]">{analytics.completedTeams || 0}</p>
+                    <p className="text-xs text-gray-400 mt-1">Complete Teams</p>
+                  </div>
+                  <div className="bg-gray-800 rounded-xl p-4 text-center">
+                    <p className="text-2xl font-bold text-[#fb923c]">{analytics.formingTeams || 0}</p>
+                    <p className="text-xs text-gray-400 mt-1">Forming Teams</p>
+                  </div>
+                </>
+              )}
               <div className="bg-gray-800 rounded-xl p-4 text-center">
                 <p className="text-2xl font-bold text-white">{analytics.merchandiseSales || 0}</p>
                 <p className="text-xs text-gray-400 mt-1">Merch Sales</p>

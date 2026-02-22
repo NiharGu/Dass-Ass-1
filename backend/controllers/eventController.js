@@ -20,6 +20,7 @@ exports.deleteEvent = async (req, res) => {
 const Event = require("../models/events");
 const User = require("../models/User");
 const Registration = require("../models/Registration");
+const Team = require("../models/Team");
 
 // Helper: Post to Discord webhook
 const postToDiscord = async (webhookUrl, event, organizer) => {
@@ -475,6 +476,7 @@ exports.getOrganizerDashboard = async (req, res) => {
 
     // Get all registrations for organizer's events
     const registrations = await Registration.find({ event: { $in: eventIds } });
+    const teams = await Team.find({ event: { $in: eventIds } });
 
     const activeRegistrations = registrations.filter(r => r.status === "registered");
 
@@ -483,13 +485,18 @@ exports.getOrganizerDashboard = async (req, res) => {
       const eventRegs = registrations.filter(r => r.event.equals(event._id));
       const activeRegs = eventRegs.filter(r => r.status === "registered");
       const cancelledRegs = eventRegs.filter(r => r.status === "cancelled");
+      const attendedRegs = activeRegs.filter(r => r.attended === true);
+
+      // Team stats
+      const eventTeams = teams.filter(t => t.event.equals(event._id));
+      const completedTeams = eventTeams.filter(t => t.status === "complete").length;
+      const formingTeams = eventTeams.filter(t => t.status === "forming").length;
 
       // Revenue calculation
       let revenue = 0;
       let merchandiseSales = 0;
 
       if (event.Type === "merchandise") {
-        // For merch events, revenue = sum of (item price * quantity) across all registrations
         const itemPriceMap = {};
         if (event.merchandiseDetails?.items) {
           event.merchandiseDetails.items.forEach(item => {
@@ -507,7 +514,6 @@ exports.getOrganizerDashboard = async (req, res) => {
           }
         });
       } else {
-        // For normal events, revenue = registration fee * active registrations
         revenue = activeRegs.length * (event.registrationFee || 0);
       }
 
@@ -521,6 +527,9 @@ exports.getOrganizerDashboard = async (req, res) => {
         totalRegistrations: activeRegs.length,
         cancelledRegistrations: cancelledRegs.length,
         registrationLimit: event.registrationLimit,
+        attendance: attendedRegs.length,
+        completedTeams,
+        formingTeams,
         revenue,
         merchandiseSales
       };
@@ -532,6 +541,7 @@ exports.getOrganizerDashboard = async (req, res) => {
     const publishedEvents = events.filter(e => e.status === "published").length;
     const closedEvents = events.filter(e => e.status === "closed").length;
     const totalRegistrations = activeRegistrations.length;
+    const totalAttendance = activeRegistrations.filter(r => r.attended === true).length;
     const totalRevenue = eventAnalytics.reduce((sum, e) => sum + e.revenue, 0);
     const totalMerchandiseSales = eventAnalytics.reduce((sum, e) => sum + e.merchandiseSales, 0);
 
@@ -542,6 +552,7 @@ exports.getOrganizerDashboard = async (req, res) => {
         publishedEvents,
         closedEvents,
         totalRegistrations,
+        totalAttendance,
         totalRevenue,
         totalMerchandiseSales
       },
@@ -578,6 +589,15 @@ exports.getEventParticipants = async (req, res) => {
       .populate("participant", "-password")
       .sort({ createdAt: -1 });
 
+    // Get teams for this event to map participant -> team name
+    const eventTeams = await Team.find({ event: event._id }).select("name members");
+    const memberTeamMap = {};
+    eventTeams.forEach(t => {
+      t.members.forEach(memberId => {
+        memberTeamMap[memberId.toString()] = t.name;
+      });
+    });
+
     // Search by participant name or email
     if (search) {
       const searchLower = search.toLowerCase();
@@ -589,19 +609,42 @@ exports.getEventParticipants = async (req, res) => {
       });
     }
 
+    // Calculate payment per participant
+    const itemPriceMap = {};
+    if (event.merchandiseDetails?.items) {
+      event.merchandiseDetails.items.forEach(item => {
+        itemPriceMap[item.name] = item.price || 0;
+      });
+    }
+
     // Format response
-    const participants = registrations.map(reg => ({
-      registrationId: reg._id,
-      ticketId: reg.ticketId,
-      participantName: reg.participant
-        ? `${reg.participant.firstName || ""} ${reg.participant.lastName || ""}`.trim()
-        : "[Deleted User]",
-      participantEmail: reg.participant ? reg.participant.email : "N/A",
-      registrationDate: reg.createdAt,
-      status: reg.status,
-      formResponses: reg.formResponses,
-      merchandiseSelections: reg.merchandiseSelections
-    }));
+    const participants = registrations.map(reg => {
+      let payment = 0;
+      if (event.Type === "merchandise" && reg.merchandiseSelections) {
+        reg.merchandiseSelections.forEach(sel => {
+          payment += (sel.quantity || 0) * (itemPriceMap[sel.itemName] || 0);
+        });
+      } else {
+        payment = event.registrationFee || 0;
+      }
+
+      return {
+        registrationId: reg._id,
+        ticketId: reg.ticketId,
+        participantName: reg.participant
+          ? `${reg.participant.firstName || ""} ${reg.participant.lastName || ""}`.trim()
+          : "[Deleted User]",
+        participantEmail: reg.participant ? reg.participant.email : "N/A",
+        registrationDate: reg.createdAt,
+        status: reg.status,
+        payment,
+        teamName: reg.participant ? (memberTeamMap[reg.participant._id.toString()] || null) : null,
+        attended: reg.attended || false,
+        attendedAt: reg.attendedAt || null,
+        formResponses: reg.formResponses,
+        merchandiseSelections: reg.merchandiseSelections
+      };
+    });
 
     res.json({
       eventName: event.Name,
@@ -630,8 +673,25 @@ exports.exportEventParticipantsCSV = async (req, res) => {
       .populate("participant", "-password")
       .sort({ createdAt: -1 });
 
+    // Get teams for this event
+    const eventTeams = await Team.find({ event: event._id }).select("name members");
+    const memberTeamMap = {};
+    eventTeams.forEach(t => {
+      t.members.forEach(memberId => {
+        memberTeamMap[memberId.toString()] = t.name;
+      });
+    });
+
+    // Price map for merch
+    const itemPriceMap = {};
+    if (event.merchandiseDetails?.items) {
+      event.merchandiseDetails.items.forEach(item => {
+        itemPriceMap[item.name] = item.price || 0;
+      });
+    }
+
     // Build CSV
-    const headers = ["Ticket ID", "Name", "Email", "Registration Date", "Status"];
+    const headers = ["Ticket ID", "Name", "Email", "Registration Date", "Payment", "Team", "Attendance", "Status"];
 
     if (event.Type === "merchandise") {
       headers.push("Merchandise Selections");
@@ -642,12 +702,25 @@ exports.exportEventParticipantsCSV = async (req, res) => {
         ? `${reg.participant.firstName || ""} ${reg.participant.lastName || ""}`.trim()
         : "Deleted User";
       const email = reg.participant ? reg.participant.email : "N/A";
+      const teamName = reg.participant ? (memberTeamMap[reg.participant._id.toString()] || "") : "";
+
+      let payment = 0;
+      if (event.Type === "merchandise" && reg.merchandiseSelections) {
+        reg.merchandiseSelections.forEach(sel => {
+          payment += (sel.quantity || 0) * (itemPriceMap[sel.itemName] || 0);
+        });
+      } else {
+        payment = event.registrationFee || 0;
+      }
 
       const row = [
         reg.ticketId,
         `"${name}"`,
         email,
         new Date(reg.createdAt).toISOString(),
+        payment,
+        `"${teamName}"`,
+        reg.attended ? "Present" : "Absent",
         reg.status
       ];
 

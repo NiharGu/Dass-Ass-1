@@ -8,6 +8,7 @@ router.post("/", authMiddleware, roleMiddleware(["participant"]), teamController
 router.post("/join", authMiddleware, roleMiddleware(["participant"]), teamController.joinTeam);
 router.get("/my-teams", authMiddleware, roleMiddleware(["participant"]), teamController.getMyTeams);
 router.get("/:id", authMiddleware, teamController.getTeamById);
+router.post("/:id/register", authMiddleware, roleMiddleware(["participant"]), teamController.registerTeam);
 router.patch("/:id/leave", authMiddleware, roleMiddleware(["participant"]), teamController.leaveTeam);
 router.patch("/:id/cancel", authMiddleware, roleMiddleware(["participant"]), teamController.cancelTeam);
 

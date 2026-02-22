@@ -24,6 +24,7 @@ export default function OrganizerDashboard() {
     { label: 'Events', value: dashboard?.summary?.totalEvents || 0, color: '#818cf8' },
     { label: 'Published', value: dashboard?.summary?.publishedEvents || 0, color: '#34d399' },
     { label: 'Registrations', value: dashboard?.summary?.totalRegistrations || 0, color: '#60a5fa' },
+    { label: 'Attendance', value: dashboard?.summary?.totalAttendance || 0, color: '#c084fc' },
     { label: 'Revenue', value: `₹${dashboard?.summary?.totalRevenue || 0}`, color: '#fbbf24' },
   ];
 
@@ -32,7 +33,7 @@ export default function OrganizerDashboard() {
       <h1 className="text-2xl font-bold text-white mb-6">Dashboard</h1>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
         {stats.map((s, i) => (
           <div key={i} className="bg-[#12141d] border border-[#1e2030] rounded-xl p-5">
             <p className="text-xs text-[#6b7394] uppercase tracking-wider font-medium">{s.label}</p>
@@ -60,8 +61,8 @@ export default function OrganizerDashboard() {
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-white font-semibold truncate mr-2 text-sm">{ev.Name}</h3>
                   <span className={`text-[10px] px-2 py-0.5 rounded-full shrink-0 font-medium uppercase tracking-wide ${ev.status === 'draft' ? 'bg-[#78350f]/30 text-[#fbbf24]'
-                      : ev.status === 'published' ? 'bg-[#065f46]/30 text-[#34d399]'
-                        : 'bg-[#1e2030] text-[#6b7394]'
+                    : ev.status === 'published' ? 'bg-[#065f46]/30 text-[#34d399]'
+                      : 'bg-[#1e2030] text-[#6b7394]'
                     }`}>{ev.status}</span>
                 </div>
                 <p className="text-xs text-[#6b7394] capitalize">{ev.Type}</p>
@@ -100,6 +101,7 @@ export default function OrganizerDashboard() {
                   <th className="px-4 py-3 font-medium">Event</th>
                   <th className="px-4 py-3 font-medium">Status</th>
                   <th className="px-4 py-3 font-medium">Registrations</th>
+                  <th className="px-4 py-3 font-medium">Attendance</th>
                   <th className="px-4 py-3 font-medium">Revenue</th>
                   <th className="px-4 py-3 font-medium">Merch</th>
                 </tr>
@@ -110,6 +112,7 @@ export default function OrganizerDashboard() {
                     <td className="px-4 py-3 text-white text-sm">{ev.eventName}</td>
                     <td className="px-4 py-3 capitalize text-[#6b7394] text-sm">{ev.status}</td>
                     <td className="px-4 py-3 text-[#8b8fad] text-sm">{ev.totalRegistrations}/{ev.registrationLimit}</td>
+                    <td className="px-4 py-3 text-[#c084fc] text-sm">{ev.attendance || 0}</td>
                     <td className="px-4 py-3 text-[#fbbf24] text-sm">₹{ev.revenue}</td>
                     <td className="px-4 py-3 text-[#8b8fad] text-sm">{ev.merchandiseSales}</td>
                   </tr>
