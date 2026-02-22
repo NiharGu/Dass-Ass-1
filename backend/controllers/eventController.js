@@ -33,9 +33,9 @@ const postToDiscord = async (webhookUrl, event, organizer) => {
           { name: "Type", value: event.Type, inline: true },
           { name: "Eligibility", value: event.eligibility, inline: true },
           { name: "Fee", value: `₹${event.registrationFee}`, inline: true },
-          { name: "Start", value: new Date(event.StartDate).toLocaleString(), inline: true },
-          { name: "End", value: new Date(event.EndDate).toLocaleString(), inline: true },
-          { name: "Deadline", value: new Date(event.registrationDeadline).toLocaleString(), inline: true },
+          { name: "Start", value: new Date(event.StartDate).toLocaleDateString(), inline: true },
+          { name: "End", value: new Date(event.EndDate).toLocaleDateString(), inline: true },
+          { name: "Deadline", value: new Date(event.registrationDeadline).toLocaleDateString(), inline: true },
           { name: "Organizer", value: organizer.organizerName || "Unknown", inline: false }
         ],
         timestamp: new Date().toISOString()
@@ -62,9 +62,14 @@ exports.createEvent = async (req, res) => {
       return res.status(403).json({ message: "Only organizers can create events" });
     }
 
-    if (!user.isApproved) {
-      return res.status(403).json({ message: "Your organizer account has been disabled. Contact admin." });
+    if (req.body.Type === "merchandise" && req.body.isTeamEvent) {
+      return res.status(400).json({ message: "Merchandise events cannot be team events" });
     }
+    if (req.body.Type === "merchandise") {
+      req.body.registrationLimit = 999999;
+      req.body.registrationFee = 0;
+    }
+
     if (req.body.status === "published") {
       // Date validation
       const { StartDate, EndDate, registrationDeadline } = req.body;
@@ -126,9 +131,7 @@ exports.publishEvent = async (req, res) => {
     }
 
     const user = await User.findById(req.user.userId);
-    if (!user.isApproved) {
-      return res.status(403).json({ message: "Your account is disabled. You cannot publish events." });
-    }
+
 
     if (event.status !== "draft") {
       return res.status(400).json({ message: "Only draft events can be published" });
@@ -180,8 +183,17 @@ exports.updateEvent = async (req, res) => {
     }
 
     const user = await User.findById(req.user.userId);
-    if (!user.isApproved) {
-      return res.status(403).json({ message: "Your account is disabled. You cannot edit events." });
+
+    const newType = req.body.Type !== undefined ? req.body.Type : event.Type;
+    const newIsTeamEvent = req.body.isTeamEvent !== undefined ? req.body.isTeamEvent : event.isTeamEvent;
+
+    if (newType === "merchandise" && newIsTeamEvent) {
+      return res.status(400).json({ message: "Merchandise events cannot be team events" });
+    }
+
+    if (newType === "merchandise") {
+      req.body.registrationLimit = 999999;
+      req.body.registrationFee = 0;
     }
 
     // Validate StartDate and EndDate if provided (applies to both draft and published)
@@ -283,9 +295,7 @@ exports.closeEvent = async (req, res) => {
     }
 
     const user = await User.findById(req.user.userId);
-    if (!user.isApproved) {
-      return res.status(403).json({ message: "Your account is disabled. You cannot close events." });
-    }
+
 
     if (event.status === "draft") {
       return res.status(400).json({ message: "Cannot close a draft event. Publish it first." });
@@ -474,19 +484,31 @@ exports.getOrganizerDashboard = async (req, res) => {
       const activeRegs = eventRegs.filter(r => r.status === "registered");
       const cancelledRegs = eventRegs.filter(r => r.status === "cancelled");
 
-      // Revenue: registration fee * active registrations
-      const revenue = activeRegs.length * (event.registrationFee || 0);
-
-      // Merchandise sales count
+      // Revenue calculation
+      let revenue = 0;
       let merchandiseSales = 0;
+
       if (event.Type === "merchandise") {
+        // For merch events, revenue = sum of (item price * quantity) across all registrations
+        const itemPriceMap = {};
+        if (event.merchandiseDetails?.items) {
+          event.merchandiseDetails.items.forEach(item => {
+            itemPriceMap[item.name] = item.price || 0;
+          });
+        }
+
         activeRegs.forEach(reg => {
           if (reg.merchandiseSelections) {
-            reg.merchandiseSelections.forEach(item => {
-              merchandiseSales += item.quantity || 0;
+            reg.merchandiseSelections.forEach(sel => {
+              const qty = sel.quantity || 0;
+              merchandiseSales += qty;
+              revenue += qty * (itemPriceMap[sel.itemName] || 0);
             });
           }
         });
+      } else {
+        // For normal events, revenue = registration fee * active registrations
+        revenue = activeRegs.length * (event.registrationFee || 0);
       }
 
       return {

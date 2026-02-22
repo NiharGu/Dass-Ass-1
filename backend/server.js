@@ -14,6 +14,7 @@ const adminRoutes = require("./routes/adminRoutes");
 const teamRoutes = require("./routes/teamRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
 const forumRoutes = require("./routes/forumRoutes");
+const uploadRoutes = require("./routes/uploadRoutes");
 
 // Load environment variables
 dotenv.config();
@@ -57,6 +58,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/teams", teamRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/forum", forumRoutes);
+app.use("/api/upload", uploadRoutes);
 
 // Basic route
 app.get("/", (req, res) => {

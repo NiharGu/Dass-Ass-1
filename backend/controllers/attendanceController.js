@@ -32,7 +32,7 @@ exports.scanAttendance = async (req, res) => {
         if (registration.attended) {
             return res.status(409).json({
                 message: "Already scanned! This ticket was scanned at " +
-                    new Date(registration.attendedAt).toLocaleString()
+                    new Date(registration.attendedAt).toLocaleDateString()
             });
         }
 

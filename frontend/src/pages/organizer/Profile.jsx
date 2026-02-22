@@ -12,11 +12,7 @@ export default function OrganizerProfile() {
   const [resetForm, setResetForm] = useState({ reason: '', newPassword: '', confirmPassword: '' });
   const [submittingReset, setSubmittingReset] = useState(false);
 
-  const disabled = user?.isApproved === false;
-
-  useEffect(() => {
-    fetchProfile();
-  }, []);
+  useEffect(() => { fetchProfile(); }, []);
 
   const fetchProfile = async () => {
     try {
@@ -38,7 +34,6 @@ export default function OrganizerProfile() {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (disabled) return toast.error('Your account is disabled');
     setSaving(true);
     try {
       const res = await API.patch('/profile', form);
@@ -75,97 +70,82 @@ export default function OrganizerProfile() {
     }
   };
 
-  if (loading) return <div className="text-center text-gray-400 py-20">Loading...</div>;
+  const inputClass = "w-full px-4 py-2.5 bg-[#0c0e14] border border-[#1e2030] rounded-xl text-white placeholder-[#3d4162] focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]/30";
+  const disabledClass = "w-full px-4 py-2.5 bg-[#0c0e14]/50 border border-[#1e2030] rounded-xl text-[#3d4162] cursor-not-allowed";
+  const labelClass = "block text-xs font-medium text-[#8b8fad] mb-1.5 uppercase tracking-wider";
+
+  if (loading) return <div className="max-w-3xl mx-auto px-4 py-8"><div className="text-center py-20"><div className="inline-block w-6 h-6 border-2 border-[#6366f1] border-t-transparent rounded-full animate-spin" /></div></div>;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
-      <h1 className="text-2xl font-bold text-white">Organizer Profile</h1>
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+      <h1 className="text-2xl font-bold text-white">Profile</h1>
 
-      {disabled && (
-        <div className="bg-red-900/30 border border-red-700 rounded-xl p-4 text-red-300 text-sm">
-          Your account is disabled. You cannot edit your profile until an admin re-enables it.
-        </div>
-      )}
-
-      {/* Profile Info */}
-      <form onSubmit={handleSave} className="bg-gray-900 border border-gray-800 rounded-2xl p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-white">Profile Info</h2>
+      <form onSubmit={handleSave} className="bg-[#12141d] border border-[#1e2030] rounded-2xl p-6 space-y-4">
+        <h2 className="text-base font-semibold text-white">Club Info</h2>
 
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Email</label>
-          <input type="text" value={profile?.email || ''} disabled
-            className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-gray-400 opacity-60" />
+          <label className={labelClass}>Email</label>
+          <input type="text" value={profile?.email || ''} disabled className={disabledClass} />
         </div>
 
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Club / Organizer Name</label>
-          <input type="text" value={form.organizerName} onChange={(e) => setForm({ ...form, organizerName: e.target.value })}
-            disabled={disabled}
-            className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          <label className={labelClass}>Club Name</label>
+          <input type="text" value={form.organizerName} onChange={(e) => setForm({ ...form, organizerName: e.target.value })} className={inputClass} />
         </div>
 
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Category</label>
-          <input type="text" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}
-            disabled={disabled}
-            className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          <label className={labelClass}>Category</label>
+          <input type="text" value={Array.isArray(form.category) ? form.category.join(', ') : form.category}
+            onChange={(e) => setForm({ ...form, category: e.target.value })} className={inputClass} />
         </div>
 
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Description</label>
-          <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
-            disabled={disabled} rows={3}
-            className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          <label className={labelClass}>Description</label>
+          <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className={inputClass} />
         </div>
 
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Contact (email or phone)</label>
+          <label className={labelClass}>Contact</label>
           <input type="text" value={form.contact} onChange={(e) => setForm({ ...form, contact: e.target.value })}
-            disabled={disabled} placeholder="e.g., club@example.com or 9876543210"
-            className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            placeholder="email or 10-digit phone" className={inputClass} />
         </div>
 
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Discord Webhook URL</label>
+          <label className={labelClass}>Discord Webhook</label>
           <input type="url" value={form.discordWebhookUrl} onChange={(e) => setForm({ ...form, discordWebhookUrl: e.target.value })}
-            disabled={disabled} placeholder="https://discord.com/api/webhooks/..."
-            className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            placeholder="https://discord.com/api/webhooks/..." className={inputClass} />
         </div>
 
-        <button type="submit" disabled={saving || disabled}
-          className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium rounded-lg cursor-pointer transition">
+        <button type="submit" disabled={saving}
+          className="px-6 py-2.5 bg-[#6366f1] hover:bg-[#818cf8] disabled:opacity-50 text-white font-medium rounded-xl cursor-pointer transition-all active:scale-[0.98]">
           {saving ? 'Saving...' : 'Save Profile'}
         </button>
       </form>
 
-      {/* Password Reset Request */}
-      <form onSubmit={handleResetRequest} className="bg-gray-900 border border-gray-800 rounded-2xl p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-white">Request Password Reset</h2>
-        <p className="text-sm text-gray-400">As an organizer, your password reset must be approved by an admin.</p>
+      <form onSubmit={handleResetRequest} className="bg-[#12141d] border border-[#1e2030] rounded-2xl p-6 space-y-4">
+        <h2 className="text-base font-semibold text-white">Request Password Reset</h2>
+        <p className="text-xs text-[#6b7394]">As an organizer, your password reset must be approved by an admin.</p>
 
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Reason</label>
+          <label className={labelClass}>Reason</label>
           <textarea value={resetForm.reason} onChange={(e) => setResetForm({ ...resetForm, reason: e.target.value })}
-            rows={2} required placeholder="Why do you need a password reset?"
-            className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            rows={2} required placeholder="Why do you need a password reset?" className={inputClass} />
         </div>
 
         <div>
-          <label className="block text-sm text-gray-400 mb-1">New Password</label>
+          <label className={labelClass}>New Password</label>
           <input type="password" value={resetForm.newPassword} onChange={(e) => setResetForm({ ...resetForm, newPassword: e.target.value })}
-            required minLength={6}
-            className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            required minLength={6} className={inputClass} />
         </div>
 
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Confirm New Password</label>
+          <label className={labelClass}>Confirm Password</label>
           <input type="password" value={resetForm.confirmPassword} onChange={(e) => setResetForm({ ...resetForm, confirmPassword: e.target.value })}
-            required
-            className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            required className={inputClass} />
         </div>
 
         <button type="submit" disabled={submittingReset}
-          className="w-full py-3 bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50 text-white font-medium rounded-lg cursor-pointer transition">
+          className="px-6 py-2.5 bg-[#78350f]/50 hover:bg-[#78350f]/70 text-[#fbbf24] font-medium rounded-xl cursor-pointer transition-all active:scale-[0.98]">
           {submittingReset ? 'Submitting...' : 'Submit Reset Request'}
         </button>
       </form>

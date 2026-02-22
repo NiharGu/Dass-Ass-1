@@ -30,7 +30,7 @@ export default function BrowseEvents() {
 
   useEffect(() => {
     fetchEvents();
-    API.get('/events/trending').then(res => setTrending(res.data)).catch(() => {});
+    API.get('/events/trending').then(res => setTrending(res.data)).catch(() => { });
   }, []);
 
   useEffect(() => {
@@ -43,82 +43,83 @@ export default function BrowseEvents() {
     setFilters(prev => ({ ...prev, [key]: val }));
   };
 
+  const selectClass = "px-3 py-2 bg-[#0c0e14] border border-[#1e2030] rounded-lg text-sm text-[#8b8fad] focus:outline-none focus:border-[#6366f1]";
+
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
       <h1 className="text-2xl font-bold text-white mb-6">Browse Events</h1>
 
       {trending.length > 0 && (
         <div className="mb-8">
-          <h2 className="text-lg font-semibold text-white mb-3">🔥 Trending</h2>
-          <div className="flex gap-4 overflow-x-auto pb-2">
+          <h2 className="text-sm font-semibold text-[#818cf8] uppercase tracking-wider mb-3">🔥 Trending</h2>
+          <div className="flex gap-3 overflow-x-auto pb-2">
             {trending.map(ev => (
               <Link key={ev._id} to={`/events/${ev._id}`}
-                className="min-w-[250px] bg-gradient-to-br from-indigo-900/40 to-purple-900/40 border border-indigo-800/50 rounded-xl p-4 hover:border-indigo-600 transition">
-                <p className="text-white font-semibold truncate">{ev.Name}</p>
-                <p className="text-sm text-gray-400 mt-1">{ev.registrationCount} registrations</p>
-                <p className="text-xs text-gray-500 mt-1">{ev.organizer?.organizerName}</p>
+                className="min-w-[240px] bg-gradient-to-br from-[#1a1c2e] to-[#171927] border border-[#2a2d48] rounded-xl p-4 hover:border-[#6366f1]/50 transition-all card-hover">
+                <p className="text-white font-semibold truncate text-sm">{ev.Name}</p>
+                <p className="text-xs text-[#6b7394] mt-1">{ev.registrationCount} registrations</p>
+                <p className="text-xs text-[#3d4162] mt-1">{ev.organizer?.organizerName}</p>
               </Link>
             ))}
           </div>
         </div>
       )}
 
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6">
+      {/* Filters */}
+      <div className="bg-[#12141d] border border-[#1e2030] rounded-xl p-4 mb-6">
         <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
           placeholder="Search events or organizers..."
-          className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-3" />
+          className="w-full px-4 py-2.5 bg-[#0c0e14] border border-[#1e2030] rounded-xl text-white placeholder-[#3d4162] focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]/30 mb-3" />
         <div className="flex flex-wrap gap-3">
-          <select value={filters.eventType} onChange={setFilter('eventType')}
-            className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-300 focus:outline-none">
+          <select value={filters.eventType} onChange={setFilter('eventType')} className={selectClass}>
             <option value="">All Types</option>
             <option value="normal">Normal</option>
             <option value="merchandise">Merchandise</option>
           </select>
-          <select value={filters.eligibility} onChange={setFilter('eligibility')}
-            className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-300 focus:outline-none">
+          <select value={filters.eligibility} onChange={setFilter('eligibility')} className={selectClass}>
             <option value="">All Eligibility</option>
             <option value="open">Open</option>
             <option value="iiit-only">IIIT Only</option>
             <option value="non-iiit">Non-IIIT</option>
           </select>
-          <input type="date" value={filters.startDate} onChange={setFilter('startDate')}
-            className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-300 focus:outline-none" />
-          <input type="date" value={filters.endDate} onChange={setFilter('endDate')}
-            className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-300 focus:outline-none" />
-          <label className="flex items-center gap-2 text-sm text-gray-300 cursor-pointer">
+          <input type="date" value={filters.startDate} onChange={setFilter('startDate')} className={selectClass} />
+          <input type="date" value={filters.endDate} onChange={setFilter('endDate')} className={selectClass} />
+          <label className="flex items-center gap-2 text-sm text-[#8b8fad] cursor-pointer">
             <input type="checkbox" checked={filters.followedClubs}
               onChange={(e) => setFilters(prev => ({ ...prev, followedClubs: e.target.checked }))}
-              className="rounded" />
-            Followed Clubs
+              className="rounded accent-[#6366f1]" />
+            Following
           </label>
         </div>
       </div>
 
       {loading ? (
-        <p className="text-gray-400">Loading...</p>
+        <div className="text-center py-20">
+          <div className="inline-block w-6 h-6 border-2 border-[#6366f1] border-t-transparent rounded-full animate-spin" />
+        </div>
       ) : events.length === 0 ? (
-        <p className="text-gray-500 text-center py-16">No events found</p>
+        <p className="text-[#3d4162] text-center py-16">No events found</p>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {events.map(ev => (
             <Link key={ev._id} to={`/events/${ev._id}`}
-              className="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-gray-700 transition group">
+              className="bg-[#12141d] border border-[#1e2030] rounded-xl p-5 hover:border-[#2a2d48] transition-all group card-hover">
               <div className="flex items-start justify-between mb-3">
-                <h3 className="text-white font-semibold group-hover:text-indigo-400 transition truncate mr-2">{ev.Name}</h3>
-                <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
-                  ev.Type === 'merchandise' ? 'bg-amber-900/40 text-amber-400' : 'bg-blue-900/40 text-blue-400'
-                }`}>
+                <h3 className="text-white font-semibold group-hover:text-[#818cf8] transition truncate mr-2 text-[15px]">{ev.Name}</h3>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full shrink-0 font-medium uppercase tracking-wide ${ev.Type === 'merchandise' ? 'bg-[#78350f]/30 text-[#fbbf24]' : 'bg-[#1e3a5f]/30 text-[#60a5fa]'
+                  }`}>
                   {ev.Type}
                 </span>
               </div>
-              <p className="text-sm text-gray-400 line-clamp-2 mb-3">{ev.Description}</p>
-              <div className="flex items-center justify-between text-xs text-gray-500">
+              <p className="text-sm text-[#6b7394] line-clamp-2 mb-3 leading-relaxed">{ev.Description}</p>
+              <div className="flex items-center justify-between text-xs text-[#3d4162]">
                 <span>{ev.organizer?.organizerName || 'Unknown'}</span>
                 <span>{new Date(ev.StartDate).toLocaleDateString()}</span>
               </div>
-              <div className="flex items-center justify-between text-xs text-gray-500 mt-1">
+              <div className="flex items-center justify-between text-xs text-[#3d4162] mt-1">
                 <span className="capitalize">{ev.eligibility}</span>
-                <span>₹{ev.registrationFee}</span>
+                {ev.registrationFee > 0 && <span className="text-[#818cf8]">₹{ev.registrationFee}</span>}
+                {ev.registrationFee === 0 && <span className="text-[#34d399]">Free</span>}
               </div>
             </Link>
           ))}

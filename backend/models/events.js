@@ -96,8 +96,12 @@ const eventSchema = new mongoose.Schema(
       items: [
         {
           name: String,
-          size: String,
+          size: {
+            type: String,
+            enum: ["XS", "S", "M", "L", "XL"]
+          },
           color: String,
+          price: { type: Number, default: 0 },
           stock: Number,
           purchaseLimit: Number // Max quantity per participant for this specific item
         }

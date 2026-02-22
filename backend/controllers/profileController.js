@@ -5,12 +5,20 @@ const bcrypt = require("bcrypt");
 exports.getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.userId).select("-password");
-    
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.json(user);
+    const userObj = user.toObject();
+
+    // Populate followed clubs for display
+    if (user.followedClubs && user.followedClubs.length > 0) {
+      const clubs = await User.find({ _id: { $in: user.followedClubs }, role: "organizer" }).select("organizerName");
+      userObj.populatedFollowedClubs = clubs;
+    }
+
+    res.json(userObj);
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
@@ -20,7 +28,7 @@ exports.getProfile = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.userId);
-    
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -31,9 +39,18 @@ exports.updateProfile = async (req, res) => {
       organizer: ["organizerName", "category", "description", "contact", "discordWebhookUrl"]
     };
 
-    // Disabled organizers can view but not edit
-    if (user.role === "organizer" && !user.isApproved) {
-      return res.status(403).json({ message: "Your account is disabled. You cannot edit your profile." });
+
+
+    // Validate contact number for participant
+    if (user.role === "participant" && req.body.contactNumber !== undefined) {
+      if (!/^\d{10}$/.test(req.body.contactNumber)) {
+        return res.status(400).json({ message: "Contact number must be exactly 10 digits" });
+      }
+    }
+
+    // Prevent IIIT students from changing org name
+    if (user.role === "participant" && user.participantType === "iiit" && req.body.collegeOrOrgName !== undefined) {
+      req.body.collegeOrOrgName = "IIIT Hyderabad";
     }
 
     const updates = allowedUpdates[user.role] || [];
@@ -72,9 +89,9 @@ exports.updateProfile = async (req, res) => {
     const updatedUser = user.toObject();
     delete updatedUser.password;
 
-    res.json({ 
-      message: "Profile updated successfully", 
-      user: updatedUser 
+    res.json({
+      message: "Profile updated successfully",
+      user: updatedUser
     });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
@@ -87,20 +104,20 @@ exports.changePassword = async (req, res) => {
     const { currentPassword, newPassword } = req.body;
 
     if (!currentPassword || !newPassword) {
-      return res.status(400).json({ 
-        message: "Current password and new password are required" 
+      return res.status(400).json({
+        message: "Current password and new password are required"
       });
     }
 
     const user = await User.findById(req.user.userId);
-    
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
     // Verify current password
     const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
-    
+
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Current password is incorrect" });
     }

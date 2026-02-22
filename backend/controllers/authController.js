@@ -14,8 +14,13 @@ exports.register = async (req, res) => {
         const role = "participant";
 
         // Validate required fields
-        if (!email || !password || !firstName || !lastName || !participantType || !collegeOrOrgName || !contactNumber) {
+        if (!email || !password || !firstName || !lastName || !participantType || !contactNumber) {
             return res.status(400).json({ message: "All fields are required" });
+        }
+
+        // Validate 10-digit contact number
+        if (!/^\d{10}$/.test(contactNumber)) {
+            return res.status(400).json({ message: "Contact number must be exactly 10 digits" });
         }
 
         // IIIT email validation
@@ -37,13 +42,13 @@ exports.register = async (req, res) => {
 
         // Create user object
         const userData = {
-            email,
+            email: email.toLowerCase(),
             password: hashedPassword,
             role,
             firstName,
             lastName,
             participantType,
-            collegeOrOrgName,
+            collegeOrOrgName: participantType === 'iiit' ? 'IIIT Hyderabad' : collegeOrOrgName,
             contactNumber
         };
 
@@ -86,10 +91,15 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: "Email and password are required" });
         }
 
-        // Check if user exists
-        const user = await User.findOne({ email });
+        // Check if user exists (case-insensitive email)
+        const user = await User.findOne({ email: email.toLowerCase() });
         if (!user) {
             return res.status(401).json({ message: "Invalid credentials" });
+        }
+
+        // Block disabled organizers from logging in
+        if (user.role === 'organizer' && !user.isApproved) {
+            return res.status(403).json({ message: "Your account has been disabled by the admin. Contact support." });
         }
 
         // Verify password
@@ -136,21 +146,21 @@ exports.forgotPassword = async (req, res) => {
 
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(200).json({ 
-                message: "If an account exists with this email, a password reset link will be sent" 
+            return res.status(200).json({
+                message: "If an account exists with this email, a password reset link will be sent"
             });
         }
 
         // Organizers cannot self-reset - must go through admin
         if (user.role === "organizer") {
-            return res.status(403).json({ 
-                message: "Organizer password resets must be requested through the Admin" 
+            return res.status(403).json({
+                message: "Organizer password resets must be requested through the Admin"
             });
         }
 
         // Generate reset token
         const resetToken = crypto.randomBytes(32).toString("hex");
-        
+
         // Hash token before storing
         const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
 
@@ -166,7 +176,9 @@ exports.forgotPassword = async (req, res) => {
 
         // Send email with reset link
         const transporter = nodemailer.createTransport({
-            service: process.env.EMAIL_SERVICE || "gmail",
+            host: "smtp.gmail.com",
+            port: 465,
+            secure: true,
             auth: {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASSWORD
@@ -191,8 +203,8 @@ exports.forgotPassword = async (req, res) => {
 
         await transporter.sendMail(mailOptions);
 
-        res.status(200).json({ 
-            message: "If an account exists with this email, a password reset link will be sent" 
+        res.status(200).json({
+            message: "If an account exists with this email, a password reset link will be sent"
         });
     } catch (error) {
         console.error("Forgot password error:", error);
@@ -268,7 +280,7 @@ exports.resetPassword = async (req, res) => {
 
         // Hash new password
         const hashedPassword = await bcrypt.hash(newPassword, 10);
-        
+
         user.password = hashedPassword;
         await user.save();
 

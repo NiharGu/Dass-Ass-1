@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import API from '../../api/axios';
@@ -14,7 +14,7 @@ export default function Onboarding() {
   const { updateUser, user } = useAuth();
   const navigate = useNavigate();
 
-  useState(() => {
+  useEffect(() => {
     API.get('/organizers').then(res => {
       setAllClubs(res.data);
       setLoaded(true);
@@ -45,21 +45,20 @@ export default function Onboarding() {
   const handleSkip = () => navigate('/dashboard');
 
   return (
-    <div className="min-h-screen bg-gray-950 px-4 py-12">
+    <div className="min-h-screen bg-[#0c0e14] px-4 py-12">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-3xl font-bold text-white text-center mb-2">Welcome to Felicity!</h1>
-        <p className="text-gray-400 text-center mb-10">Personalize your experience</p>
+        <p className="text-[#6b7394] text-center mb-10">Personalize your experience</p>
 
-        <div className="bg-gray-900 rounded-2xl p-8 border border-gray-800 mb-6">
-          <h2 className="text-lg font-semibold text-white mb-4">Areas of Interest</h2>
+        <div className="bg-[#12141d] rounded-2xl p-8 border border-[#1e2030] mb-6 shadow-2xl shadow-black/40">
+          <h2 className="text-base font-semibold text-white mb-4">Areas of Interest</h2>
           <div className="flex flex-wrap gap-2">
             {INTERESTS.map((interest) => (
               <button key={interest} onClick={() => toggleInterest(interest)}
-                className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition ${
-                  selectedInterests.includes(interest)
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                }`}>
+                className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-all ${selectedInterests.includes(interest)
+                    ? 'bg-[#6366f1] text-white shadow-lg shadow-[#6366f1]/20'
+                    : 'bg-[#0c0e14] text-[#6b7394] border border-[#1e2030] hover:border-[#3d4162]'
+                  }`}>
                 {interest}
               </button>
             ))}
@@ -67,18 +66,19 @@ export default function Onboarding() {
         </div>
 
         {loaded && allClubs.length > 0 && (
-          <div className="bg-gray-900 rounded-2xl p-8 border border-gray-800 mb-6">
-            <h2 className="text-lg font-semibold text-white mb-4">Follow Clubs / Organizers</h2>
+          <div className="bg-[#12141d] rounded-2xl p-8 border border-[#1e2030] mb-6 shadow-2xl shadow-black/40">
+            <h2 className="text-base font-semibold text-white mb-4">Follow Clubs / Organizers</h2>
             <div className="space-y-3">
               {allClubs.map((club) => (
                 <button key={club._id} onClick={() => toggleClub(club._id)}
-                  className={`w-full text-left px-4 py-3 rounded-lg transition cursor-pointer ${
-                    clubs.includes(club._id)
-                      ? 'bg-indigo-600/20 border border-indigo-500'
-                      : 'bg-gray-800 border border-gray-700 hover:border-gray-600'
-                  }`}>
-                  <p className="text-white font-medium">{club.organizerName}</p>
-                  <p className="text-gray-400 text-sm">{club.category}</p>
+                  className={`w-full text-left px-4 py-3 rounded-xl transition-all cursor-pointer ${clubs.includes(club._id)
+                      ? 'bg-[#1e1b4b]/30 border border-[#4f46e5]/40'
+                      : 'bg-[#0c0e14] border border-[#1e2030] hover:border-[#3d4162]'
+                    }`}>
+                  <p className="text-white font-medium text-sm text-left">{club.organizerName}</p>
+                  <p className="text-[#8b8fad] text-xs text-left mt-0.5">
+                    {Array.isArray(club.category) ? club.category.join(' • ') : club.category}
+                  </p>
                 </button>
               ))}
             </div>
@@ -87,11 +87,11 @@ export default function Onboarding() {
 
         <div className="flex gap-4">
           <button onClick={handleSkip}
-            className="flex-1 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium rounded-lg cursor-pointer transition">
+            className="flex-1 py-3 bg-[#12141d] border border-[#1e2030] hover:border-[#3d4162] text-white font-medium rounded-xl cursor-pointer transition-all active:scale-[0.98]">
             Skip for now
           </button>
           <button onClick={handleSave}
-            className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg cursor-pointer transition">
+            className="flex-1 py-3 bg-[#6366f1] hover:bg-[#818cf8] text-white font-medium rounded-xl cursor-pointer transition-all active:scale-[0.98]">
             Save Preferences
           </button>
         </div>

@@ -150,9 +150,9 @@ export default function OrganizerEventDetail() {
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div><span className="text-gray-400">Type:</span> <span className="text-white ml-2">{event.Type}</span></div>
             <div><span className="text-gray-400">Eligibility:</span> <span className="text-white ml-2">{event.eligibility}</span></div>
-            <div><span className="text-gray-400">Start:</span> <span className="text-white ml-2">{new Date(event.StartDate).toLocaleString()}</span></div>
-            <div><span className="text-gray-400">End:</span> <span className="text-white ml-2">{new Date(event.EndDate).toLocaleString()}</span></div>
-            <div><span className="text-gray-400">Deadline:</span> <span className="text-white ml-2">{new Date(event.registrationDeadline).toLocaleString()}</span></div>
+            <div><span className="text-[#6b7394]">Start:</span> <span className="text-[#e2e4ef] ml-2">{new Date(event.StartDate).toLocaleDateString()}</span></div>
+            <div><span className="text-[#6b7394]">End:</span> <span className="text-[#e2e4ef] ml-2">{new Date(event.EndDate).toLocaleDateString()}</span></div>
+            <div><span className="text-[#6b7394]">Deadline:</span> <span className="text-[#e2e4ef] ml-2">{new Date(event.registrationDeadline).toLocaleDateString()}</span></div>
             <div><span className="text-gray-400">Fee:</span> <span className="text-white ml-2">₹{event.registrationFee}</span></div>
             <div><span className="text-gray-400">Limit:</span> <span className="text-white ml-2">{event.registrationLimit}</span></div>
             <div><span className="text-gray-400">Tags:</span> <span className="text-white ml-2">{event.Tags?.join(', ') || '—'}</span></div>

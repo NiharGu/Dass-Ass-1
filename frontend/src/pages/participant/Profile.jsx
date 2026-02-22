@@ -58,89 +58,111 @@ export default function ParticipantProfile() {
     }
   };
 
-  if (loading) return <div className="max-w-3xl mx-auto px-4 py-8"><p className="text-gray-400">Loading...</p></div>;
+  const inputClass = "w-full px-4 py-2.5 bg-[#0c0e14] border border-[#1e2030] rounded-xl text-white placeholder-[#3d4162] focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]/30";
+  const disabledClass = "w-full px-4 py-2.5 bg-[#0c0e14]/50 border border-[#1e2030] rounded-xl text-[#3d4162] cursor-not-allowed";
+  const labelClass = "block text-xs font-medium text-[#8b8fad] mb-1.5 uppercase tracking-wider";
+
+  if (loading) return <div className="max-w-3xl mx-auto px-4 py-8"><div className="text-center py-20"><div className="inline-block w-6 h-6 border-2 border-[#6366f1] border-t-transparent rounded-full animate-spin" /></div></div>;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
       <h1 className="text-2xl font-bold text-white">Profile</h1>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-        <h2 className="text-lg font-semibold text-white mb-4">Personal Information</h2>
+      <div className="bg-[#12141d] border border-[#1e2030] rounded-2xl p-6">
+        <h2 className="text-base font-semibold text-white mb-5">Personal Information</h2>
 
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm text-gray-400 mb-1">First Name</label>
-              <input type="text" value={form.firstName || ''} onChange={set('firstName')}
-                className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              <label className={labelClass}>First Name</label>
+              <input type="text" value={form.firstName || ''} onChange={set('firstName')} className={inputClass} />
             </div>
             <div>
-              <label className="block text-sm text-gray-400 mb-1">Last Name</label>
-              <input type="text" value={form.lastName || ''} onChange={set('lastName')}
-                className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              <label className={labelClass}>Last Name</label>
+              <input type="text" value={form.lastName || ''} onChange={set('lastName')} className={inputClass} />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Email</label>
-            <input type="email" value={form.email || ''} disabled
-              className="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-500 cursor-not-allowed" />
+            <label className={labelClass}>Email</label>
+            <input type="email" value={form.email || ''} disabled className={disabledClass} />
           </div>
 
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Participant Type</label>
-            <input type="text" value={form.participantType || ''} disabled
-              className="w-full px-4 py-2.5 bg-gray-800/50 border border-gray-700 rounded-lg text-gray-500 cursor-not-allowed capitalize" />
+            <label className={labelClass}>Participant Type</label>
+            <input type="text" value={form.participantType || ''} disabled className={`${disabledClass} capitalize`} />
           </div>
 
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Contact Number</label>
+            <label className={labelClass}>Contact Number</label>
             <input type="tel" value={form.contactNumber || ''} onChange={set('contactNumber')}
-              className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              pattern="[0-9]{10}" maxLength={10} placeholder="10-digit number"
+              title="Must be exactly 10 digits"
+              className={inputClass} />
           </div>
 
           <div>
-            <label className="block text-sm text-gray-400 mb-1">College / Organization</label>
-            <input type="text" value={form.collegeOrOrgName || ''} onChange={set('collegeOrOrgName')}
-              className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <label className={labelClass}>College / Organization</label>
+            {form.participantType === 'iiit' ? (
+              <input type="text" value="IIIT Hyderabad" disabled className={disabledClass} />
+            ) : (
+              <input type="text" value={form.collegeOrOrgName || ''} onChange={set('collegeOrOrgName')} className={inputClass} />
+            )}
           </div>
 
           <div>
-            <label className="block text-sm text-gray-400 mb-2">Interests</label>
-            <div className="flex flex-wrap gap-2">
+            <label className={labelClass}>Interests</label>
+            <div className="flex flex-wrap gap-2 mt-1">
               {INTERESTS.map(interest => (
                 <button key={interest} onClick={() => toggleInterest(interest)}
-                  className={`px-3 py-1.5 rounded-full text-sm cursor-pointer transition ${
-                    (form.selectedInterests || []).includes(interest)
-                      ? 'bg-indigo-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                  }`}>
+                  className={`px-3 py-1.5 rounded-full text-sm cursor-pointer transition-all ${(form.selectedInterests || []).includes(interest)
+                      ? 'bg-[#6366f1] text-white shadow-md shadow-[#6366f1]/20'
+                      : 'bg-[#0c0e14] text-[#6b7394] border border-[#1e2030] hover:border-[#3d4162]'
+                    }`}>
                   {interest}
                 </button>
               ))}
             </div>
           </div>
 
+          {/* Followed Clubs */}
+          {form.followedClubs && form.followedClubs.length > 0 && (
+            <div>
+              <label className={labelClass}>Following</label>
+              <div className="flex flex-wrap gap-2 mt-1">
+                {(form.populatedFollowedClubs || []).map(club => (
+                  <span key={club._id} className="px-3 py-1.5 bg-[#1e1b4b]/30 text-[#818cf8] text-sm rounded-full border border-[#312e81]/30">
+                    {club.organizerName}
+                  </span>
+                ))}
+                {(!form.populatedFollowedClubs || form.populatedFollowedClubs.length === 0) && (
+                  <span className="text-[#3d4162] text-sm">{form.followedClubs.length} club(s) followed</span>
+                )}
+              </div>
+            </div>
+          )}
+
           <button onClick={handleSave} disabled={saving}
-            className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium rounded-lg cursor-pointer transition">
+            className="px-6 py-2.5 bg-[#6366f1] hover:bg-[#818cf8] disabled:opacity-50 text-white font-medium rounded-xl cursor-pointer transition-all active:scale-[0.98]">
             {saving ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </div>
 
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-        <h2 className="text-lg font-semibold text-white mb-4">Change Password</h2>
-        <form onSubmit={handlePasswordChange} className="space-y-4">
+      <div className="bg-[#12141d] border border-[#1e2030] rounded-2xl p-6">
+        <h2 className="text-base font-semibold text-white mb-5">Change Password</h2>
+        <form onSubmit={handlePasswordChange} className="space-y-3">
           <input type="password" placeholder="Current password" required
             value={passForm.currentPassword} onChange={(e) => setPassForm({ ...passForm, currentPassword: e.target.value })}
-            className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            className={inputClass} />
           <input type="password" placeholder="New password" required minLength={6}
             value={passForm.newPassword} onChange={(e) => setPassForm({ ...passForm, newPassword: e.target.value })}
-            className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            className={inputClass} />
           <input type="password" placeholder="Confirm new password" required
             value={passForm.confirm} onChange={(e) => setPassForm({ ...passForm, confirm: e.target.value })}
-            className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            className={inputClass} />
           <button type="submit"
-            className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg cursor-pointer transition">
+            className="px-6 py-2.5 bg-[#6366f1] hover:bg-[#818cf8] text-white font-medium rounded-xl cursor-pointer transition-all active:scale-[0.98]">
             Change Password
           </button>
         </form>

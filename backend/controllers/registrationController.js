@@ -7,8 +7,11 @@ const nodemailer = require("nodemailer");
 
 // Email transporter setup
 const createEmailTransporter = () => {
+  console.log("[EMAIL] Creating transporter. EMAIL_USER:", process.env.EMAIL_USER ? "SET" : "MISSING", "EMAIL_PASSWORD:", process.env.EMAIL_PASSWORD ? "SET" : "MISSING");
   return nodemailer.createTransport({
-    service: process.env.EMAIL_SERVICE || "gmail",
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASSWORD
@@ -34,8 +37,8 @@ const sendTicketEmail = async (user, event, registration, qrCodeDataURL) => {
         <ul>
           <li><strong>Event:</strong> ${event.Name}</li>
           <li><strong>Type:</strong> ${event.Type}</li>
-          <li><strong>Start Date:</strong> ${new Date(event.StartDate).toLocaleString()}</li>
-          <li><strong>End Date:</strong> ${new Date(event.EndDate).toLocaleString()}</li>
+          <li><strong>Start Date:</strong> ${new Date(event.StartDate).toLocaleDateString()}</li>
+          <li><strong>End Date:</strong> ${new Date(event.EndDate).toLocaleDateString()}</li>
           <li><strong>Ticket ID:</strong> ${registration.ticketId}</li>
         </ul>
         

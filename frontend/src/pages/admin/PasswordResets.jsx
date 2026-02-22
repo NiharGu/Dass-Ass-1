@@ -92,7 +92,7 @@ export default function PasswordResets() {
                   </div>
                   <p className="text-sm text-gray-400">{req.user?.email}</p>
                   {req.reason && <p className="text-sm text-gray-300 mt-2"><span className="text-gray-500">Reason:</span> {req.reason}</p>}
-                  <p className="text-xs text-gray-500 mt-1">Submitted: {new Date(req.createdAt).toLocaleString()}</p>
+                  <p className="text-xs text-gray-500 mt-1">Submitted: {new Date(req.createdAt).toLocaleDateString()}</p>
 
                   {/* Show admin comment if resolved */}
                   {req.status !== 'pending' && req.adminComment && (
@@ -103,7 +103,7 @@ export default function PasswordResets() {
                   )}
                   {req.resolvedAt && (
                     <p className="text-xs text-gray-500 mt-1">
-                      {req.status === 'approved' ? 'Approved' : 'Rejected'}: {new Date(req.resolvedAt).toLocaleString()}
+                      {req.status === 'approved' ? 'Approved' : 'Rejected'}: {new Date(req.resolvedAt).toLocaleDateString()}
                     </p>
                   )}
                 </div>
