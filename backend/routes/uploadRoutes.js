@@ -12,8 +12,7 @@ const storage = new CloudinaryStorage({
     params: {
         folder: "felicity-uploads",
         allowed_formats: ["jpg", "jpeg", "png", "gif", "pdf", "doc", "docx", "txt", "zip"],
-        resource_type: "auto", // Supports images, PDFs, etc.
-        transformation: [{ quality: "auto" }] // Auto-optimize images
+        resource_type: "auto",
     }
 });
 
@@ -23,22 +22,25 @@ const upload = multer({
 });
 
 // POST /api/upload — Upload a single file, returns the hosted URL
-router.post("/", authMiddleware, upload.single("file"), async (req, res) => {
-    try {
+router.post("/", authMiddleware, (req, res) => {
+    upload.single("file")(req, res, (err) => {
+        if (err) {
+            console.error("[UPLOAD] Multer/Cloudinary error:", err);
+            return res.status(500).json({ message: err.message || "File upload failed" });
+        }
+
         if (!req.file) {
             return res.status(400).json({ message: "No file uploaded" });
         }
 
+        console.log("[UPLOAD] Success:", req.file.path);
         res.json({
-            url: req.file.path, // Cloudinary URL
+            url: req.file.path,
             filename: req.file.originalname || req.file.filename,
             format: req.file.format || req.file.mimetype,
             size: req.file.size
         });
-    } catch (error) {
-        console.error("Upload error:", error);
-        res.status(500).json({ message: "File upload failed" });
-    }
+    });
 });
 
 module.exports = router;

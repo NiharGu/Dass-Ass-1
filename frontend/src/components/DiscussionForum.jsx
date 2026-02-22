@@ -6,6 +6,13 @@ import io from 'socket.io-client';
 
 const EMOJIS = ['👍', '❤️', '😂', '🎉', '🤔', '👀'];
 
+// Derive backend socket URL from the API URL or fallback
+const getSocketUrl = () => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    // Strip "/api" to get the base backend URL
+    return apiUrl.replace(/\/api\/?$/, '');
+};
+
 export default function DiscussionForum({ eventId, isOrganizer }) {
     const [messages, setMessages] = useState([]);
     const [newMsg, setNewMsg] = useState('');
@@ -19,7 +26,7 @@ export default function DiscussionForum({ eventId, isOrganizer }) {
         fetchMessages();
 
         // Connect to socket
-        const socket = io(window.location.origin.replace(':5173', ':5000'), {
+        const socket = io(getSocketUrl(), {
             transports: ['websocket', 'polling']
         });
         socketRef.current = socket;
@@ -27,7 +34,11 @@ export default function DiscussionForum({ eventId, isOrganizer }) {
         socket.emit('joinEvent', eventId);
 
         socket.on('newMessage', (msg) => {
-            setMessages(prev => [...prev, msg]);
+            setMessages(prev => {
+                // Avoid duplicates if we already fetched it
+                if (prev.some(m => m._id === msg._id)) return prev;
+                return [...prev, msg];
+            });
         });
 
         socket.on('messageDeleted', (msgId) => {
@@ -63,7 +74,7 @@ export default function DiscussionForum({ eventId, isOrganizer }) {
         e.preventDefault();
         if (!newMsg.trim()) return;
         try {
-            await API.post(`/forum/${eventId}/messages`, {
+            const res = await API.post(`/forum/${eventId}/messages`, {
                 content: newMsg,
                 parentMessage: replyTo?._id || null,
                 isAnnouncement
@@ -71,10 +82,13 @@ export default function DiscussionForum({ eventId, isOrganizer }) {
             setNewMsg('');
             setReplyTo(null);
             setIsAnnouncement(false);
-            // Message will arrive via socket
+            // If socket doesn't deliver the message, add it immediately
+            setMessages(prev => {
+                if (prev.some(m => m._id === res.data._id)) return prev;
+                return [...prev, res.data];
+            });
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to send');
-            // Fallback: fetch messages manually
             fetchMessages();
         }
     };

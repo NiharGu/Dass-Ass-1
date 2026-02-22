@@ -1,7 +1,10 @@
+const dotenv = require("dotenv");
+// Load environment variables FIRST, before any modules that use them
+dotenv.config();
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const dotenv = require("dotenv");
 const http = require("http");
 const { Server } = require("socket.io");
 
@@ -15,9 +18,6 @@ const teamRoutes = require("./routes/teamRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
 const forumRoutes = require("./routes/forumRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
-
-// Load environment variables
-dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
