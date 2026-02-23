@@ -22,9 +22,16 @@ const uploadRoutes = require("./routes/uploadRoutes");
 const app = express();
 const server = http.createServer(app);
 
+// Shared CORS options
+const corsOptions = {
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true,
+};
+
 // Socket.IO setup
 const io = new Server(server, {
-    cors: { origin: "*", methods: ["GET", "POST"] }
+    cors: corsOptions
 });
 
 app.set("io", io);
@@ -40,7 +47,7 @@ io.on("connection", (socket) => {
 });
 
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json({ limit: "10mb" }));
 
 // Database connection
