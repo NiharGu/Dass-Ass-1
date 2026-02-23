@@ -58,18 +58,18 @@ export default function ParticipantProfile() {
     }
   };
 
-  const inputClass = "w-full px-4 py-2.5 bg-[#0c0e14] border border-[#1e2030] rounded-xl text-white placeholder-[#3d4162] focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]/30";
-  const disabledClass = "w-full px-4 py-2.5 bg-[#0c0e14]/50 border border-[#1e2030] rounded-xl text-[#3d4162] cursor-not-allowed";
-  const labelClass = "block text-xs font-medium text-[#8b8fad] mb-1.5 uppercase tracking-wider";
+  const inputClass = "w-full px-4 py-2.5 bg-white border border-gray-200 border rounded text-black placeholder-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/30";
+  const disabledClass = "w-full px-4 py-2.5 bg-white border border-gray-200 border rounded text-gray-400 cursor-not-allowed";
+  const labelClass = "block text-xs font-medium text-gray-600 mb-1.5  ";
 
-  if (loading) return <div className="max-w-3xl mx-auto px-4 py-8"><div className="text-center py-20"><div className="inline-block w-6 h-6 border-2 border-[#6366f1] border-t-transparent rounded-full animate-spin" /></div></div>;
+  if (loading) return <div className="max-w-3xl mx-auto px-4 py-8"><div className="text-center py-20"><div className="inline-block w-6 h-6 border-2 border-black border-t-transparent rounded animate-spin" /></div></div>;
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-      <h1 className="text-2xl font-bold text-white">Profile</h1>
+      <h1 className="text-2xl font-bold text-black">Profile</h1>
 
-      <div className="bg-[#12141d] border border-[#1e2030] rounded-2xl p-6">
-        <h2 className="text-base font-semibold text-white mb-5">Personal Information</h2>
+      <div className="bg-gray-50 border border-gray-200 border rounded p-6">
+        <h2 className="text-base font-semibold text-black mb-5">Personal Information</h2>
 
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -115,9 +115,9 @@ export default function ParticipantProfile() {
             <div className="flex flex-wrap gap-2 mt-1">
               {INTERESTS.map(interest => (
                 <button key={interest} onClick={() => toggleInterest(interest)}
-                  className={`px-3 py-1.5 rounded-full text-sm cursor-pointer transition-all ${(form.selectedInterests || []).includes(interest)
-                      ? 'bg-[#6366f1] text-white shadow-md shadow-[#6366f1]/20'
-                      : 'bg-[#0c0e14] text-[#6b7394] border border-[#1e2030] hover:border-[#3d4162]'
+                  className={`px-3 py-1.5 rounded text-sm cursor-pointer  ${(form.selectedInterests || []).includes(interest)
+                      ? 'bg-black text-white-important text-white shadow shadow -200'
+                      : 'bg-white text-gray-500 border border-gray-200 border hover:border-gray-300 border'
                     }`}>
                   {interest}
                 </button>
@@ -131,26 +131,26 @@ export default function ParticipantProfile() {
               <label className={labelClass}>Following</label>
               <div className="flex flex-wrap gap-2 mt-1">
                 {(form.populatedFollowedClubs || []).map(club => (
-                  <span key={club._id} className="px-3 py-1.5 bg-[#1e1b4b]/30 text-[#818cf8] text-sm rounded-full border border-[#312e81]/30">
+                  <span key={club._id} className="px-3 py-1.5 bg-gray-100 text-black font-medium text-sm rounded border border-gray-300/30">
                     {club.organizerName}
                   </span>
                 ))}
                 {(!form.populatedFollowedClubs || form.populatedFollowedClubs.length === 0) && (
-                  <span className="text-[#3d4162] text-sm">{form.followedClubs.length} club(s) followed</span>
+                  <span className="text-gray-400 text-sm">{form.followedClubs.length} club(s) followed</span>
                 )}
               </div>
             </div>
           )}
 
           <button onClick={handleSave} disabled={saving}
-            className="px-6 py-2.5 bg-[#6366f1] hover:bg-[#818cf8] disabled:opacity-50 text-white font-medium rounded-xl cursor-pointer transition-all active:scale-[0.98]">
+            className="px-6 py-2.5 bg-black text-white-important hover:bg-gray-900 disabled:opacity-50 text-white font-medium rounded cursor-pointer  ">
             {saving ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </div>
 
-      <div className="bg-[#12141d] border border-[#1e2030] rounded-2xl p-6">
-        <h2 className="text-base font-semibold text-white mb-5">Change Password</h2>
+      <div className="bg-gray-50 border border-gray-200 border rounded p-6">
+        <h2 className="text-base font-semibold text-black mb-5">Change Password</h2>
         <form onSubmit={handlePasswordChange} className="space-y-3">
           <input type="password" placeholder="Current password" required
             value={passForm.currentPassword} onChange={(e) => setPassForm({ ...passForm, currentPassword: e.target.value })}
@@ -162,7 +162,7 @@ export default function ParticipantProfile() {
             value={passForm.confirm} onChange={(e) => setPassForm({ ...passForm, confirm: e.target.value })}
             className={inputClass} />
           <button type="submit"
-            className="px-6 py-2.5 bg-[#6366f1] hover:bg-[#818cf8] text-white font-medium rounded-xl cursor-pointer transition-all active:scale-[0.98]">
+            className="px-6 py-2.5 bg-black text-white-important hover:bg-gray-900 text-white font-medium rounded cursor-pointer  ">
             Change Password
           </button>
         </form>

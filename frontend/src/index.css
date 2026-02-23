@@ -5,7 +5,7 @@
   --color-surface: #0c0e14;
   --color-card: #12141d;
   --color-card-border: #1e2030;
-  --color-card-hover: #252839;
+  --color-border: #252839;
   --color-muted: #6b7394;
   --color-subtle: #3d4162;
   --color-accent: #6366f1;
@@ -20,21 +20,39 @@
 body {
   font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
   background-color: var(--color-surface);
-  color: #e2e4ef;
+  color: #000000;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: 'Space Grotesk', system-ui, sans-serif;
   letter-spacing: -0.02em;
 }
 
 /* ─── Scrollbar ─── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--color-subtle); border-radius: 8px; }
-::-webkit-scrollbar-thumb:hover { background: var(--color-muted); }
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-subtle);
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted);
+}
 
 /* ─── Focus Ring ─── */
 *:focus-visible {
@@ -50,7 +68,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ─── Transitions ─── */
-a, button, input, select, textarea {
+a,
+button,
+input,
+select,
+textarea {
   transition: all 0.15s ease;
 }
 
@@ -58,7 +80,8 @@ a, button, input, select, textarea {
 .card-hover {
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
+
 .card-hover:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
 }

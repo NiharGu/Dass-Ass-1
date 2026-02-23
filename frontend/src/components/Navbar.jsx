@@ -11,8 +11,8 @@ export default function Navbar() {
   if (!user) return null;
 
   const isActive = (path) => location.pathname === path
-    ? 'text-white bg-white/[0.06]'
-    : 'text-[#8b8fad] hover:text-white hover:bg-white/[0.04]';
+    ? 'text-black bg-white/[0.06]'
+    : 'text-gray-600 hover:text-black hover:bg-white/[0.04]';
 
   const participantLinks = [
     { to: '/dashboard', label: 'Dashboard' },
@@ -40,42 +40,42 @@ export default function Navbar() {
       : participantLinks;
 
   return (
-    <nav className="bg-[#0c0e14] border-b border-[#1e2030] sticky top-0 z-50 backdrop-blur-xl bg-opacity-80">
+    <nav className="bg-white border-b border-gray-200 border sticky top-0 z-50  ">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-14">
-          <Link to="/" className="text-lg font-bold tracking-tight text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            <span className="text-[#818cf8]">f</span>elicity
+          <Link to="/" className="text-lg font-bold  text-black" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            <span className="text-black font-medium">f</span>elicity
           </Link>
 
           <div className="hidden md:flex items-center gap-1">
             {links.map((l) => (
               <Link key={l.to} to={l.to}
-                className={`px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all ${isActive(l.to)}`}>
+                className={`px-3 py-1.5 rounded text-[13px] font-medium  ${isActive(l.to)}`}>
                 {l.label}
               </Link>
             ))}
-            <div className="w-px h-5 bg-[#1e2030] mx-2" />
+            <div className="w-px h-5 bg-gray-100 mx-2" />
             <button onClick={logout}
-              className="px-3 py-1.5 rounded-lg text-[13px] font-medium text-[#ef4444] hover:bg-[#7f1d1d]/20 cursor-pointer transition-all">
+              className="px-3 py-1.5 rounded text-[13px] font-medium text-black hover:bg-gray-300/20 cursor-pointer ">
               Logout
             </button>
           </div>
 
-          <button onClick={() => setOpen(!open)} className="md:hidden text-white cursor-pointer p-1">
+          <button onClick={() => setOpen(!open)} className="md:hidden text-black cursor-pointer p-1">
             {open ? <HiX size={22} /> : <HiMenu size={22} />}
           </button>
         </div>
 
         {open && (
-          <div className="md:hidden pb-3 space-y-1 border-t border-[#1e2030] pt-2">
+          <div className="md:hidden pb-3 space-y-1 border-t border-gray-200 border pt-2">
             {links.map((l) => (
               <Link key={l.to} to={l.to} onClick={() => setOpen(false)}
-                className={`block px-3 py-2 text-sm rounded-lg ${isActive(l.to)}`}>
+                className={`block px-3 py-2 text-sm rounded ${isActive(l.to)}`}>
                 {l.label}
               </Link>
             ))}
             <button onClick={() => { logout(); setOpen(false); }}
-              className="block w-full text-left px-3 py-2 text-sm text-[#ef4444] hover:bg-[#7f1d1d]/20 rounded-lg cursor-pointer">
+              className="block w-full text-left px-3 py-2 text-sm text-black hover:bg-gray-300/20 rounded cursor-pointer">
               Logout
             </button>
           </div>

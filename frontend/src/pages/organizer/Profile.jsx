@@ -70,18 +70,18 @@ export default function OrganizerProfile() {
     }
   };
 
-  const inputClass = "w-full px-4 py-2.5 bg-[#0c0e14] border border-[#1e2030] rounded-xl text-white placeholder-[#3d4162] focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]/30";
-  const disabledClass = "w-full px-4 py-2.5 bg-[#0c0e14]/50 border border-[#1e2030] rounded-xl text-[#3d4162] cursor-not-allowed";
-  const labelClass = "block text-xs font-medium text-[#8b8fad] mb-1.5 uppercase tracking-wider";
+  const inputClass = "w-full px-4 py-2.5 bg-white border border-gray-200 border rounded text-black placeholder-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/30";
+  const disabledClass = "w-full px-4 py-2.5 bg-white border border-gray-200 border rounded text-gray-400 cursor-not-allowed";
+  const labelClass = "block text-xs font-medium text-gray-600 mb-1.5  ";
 
-  if (loading) return <div className="max-w-3xl mx-auto px-4 py-8"><div className="text-center py-20"><div className="inline-block w-6 h-6 border-2 border-[#6366f1] border-t-transparent rounded-full animate-spin" /></div></div>;
+  if (loading) return <div className="max-w-3xl mx-auto px-4 py-8"><div className="text-center py-20"><div className="inline-block w-6 h-6 border-2 border-black border-t-transparent rounded animate-spin" /></div></div>;
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-      <h1 className="text-2xl font-bold text-white">Profile</h1>
+      <h1 className="text-2xl font-bold text-black">Profile</h1>
 
-      <form onSubmit={handleSave} className="bg-[#12141d] border border-[#1e2030] rounded-2xl p-6 space-y-4">
-        <h2 className="text-base font-semibold text-white">Club Info</h2>
+      <form onSubmit={handleSave} className="bg-gray-50 border border-gray-200 border rounded p-6 space-y-4">
+        <h2 className="text-base font-semibold text-black">Club Info</h2>
 
         <div>
           <label className={labelClass}>Email</label>
@@ -117,14 +117,14 @@ export default function OrganizerProfile() {
         </div>
 
         <button type="submit" disabled={saving}
-          className="px-6 py-2.5 bg-[#6366f1] hover:bg-[#818cf8] disabled:opacity-50 text-white font-medium rounded-xl cursor-pointer transition-all active:scale-[0.98]">
+          className="px-6 py-2.5 bg-black text-white-important hover:bg-gray-900 disabled:opacity-50 text-white font-medium rounded cursor-pointer  ">
           {saving ? 'Saving...' : 'Save Profile'}
         </button>
       </form>
 
-      <form onSubmit={handleResetRequest} className="bg-[#12141d] border border-[#1e2030] rounded-2xl p-6 space-y-4">
-        <h2 className="text-base font-semibold text-white">Request Password Reset</h2>
-        <p className="text-xs text-[#6b7394]">As an organizer, your password reset must be approved by an admin.</p>
+      <form onSubmit={handleResetRequest} className="bg-gray-50 border border-gray-200 border rounded p-6 space-y-4">
+        <h2 className="text-base font-semibold text-black">Request Password Reset</h2>
+        <p className="text-xs text-gray-500">As an organizer, your password reset must be approved by an admin.</p>
 
         <div>
           <label className={labelClass}>Reason</label>
@@ -145,7 +145,7 @@ export default function OrganizerProfile() {
         </div>
 
         <button type="submit" disabled={submittingReset}
-          className="px-6 py-2.5 bg-[#78350f]/50 hover:bg-[#78350f]/70 text-[#fbbf24] font-medium rounded-xl cursor-pointer transition-all active:scale-[0.98]">
+          className="px-6 py-2.5 bg-gray-200 hover:bg-gray-300/70 text-black font-medium rounded cursor-pointer  ">
           {submittingReset ? 'Submitting...' : 'Submit Reset Request'}
         </button>
       </form>

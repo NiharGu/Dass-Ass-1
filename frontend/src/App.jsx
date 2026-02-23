@@ -54,7 +54,7 @@ export default function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0c0e14] text-[#e2e4ef]">
+    <div className="min-h-screen bg-white text-gray-900">
       <Navbar />
       <Routes>
         {/* Public / Auth */}

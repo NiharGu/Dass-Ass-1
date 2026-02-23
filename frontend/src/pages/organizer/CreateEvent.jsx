@@ -101,17 +101,17 @@ export default function CreateEvent() {
     }
   };
 
-  const inputClass = "w-full px-4 py-2.5 bg-[#0c0e14] border border-[#1e2030] rounded-xl text-white placeholder-[#3d4162] focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]/30";
-  const labelClass = "block text-xs font-medium text-[#8b8fad] mb-1.5 uppercase tracking-wider";
-  const fieldInput = "px-3 py-2 bg-[#0c0e14] border border-[#1e2030] rounded-lg text-sm text-white placeholder-[#3d4162] focus:outline-none focus:border-[#6366f1]";
+  const inputClass = "w-full px-4 py-2.5 bg-white border border-gray-200 border rounded text-black placeholder-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/30";
+  const labelClass = "block text-xs font-medium text-gray-600 mb-1.5  ";
+  const fieldInput = "px-3 py-2 bg-white border border-gray-200 border rounded text-sm text-black placeholder-gray-400 focus:outline-none focus:border-black";
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-      <h1 className="text-2xl font-bold text-white mb-6">Create Event</h1>
+      <h1 className="text-2xl font-bold text-black mb-6">Create Event</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-[#12141d] border border-[#1e2030] rounded-2xl p-6 space-y-4">
-          <h2 className="text-base font-semibold text-white">Basic Info</h2>
+        <div className="bg-gray-50 border border-gray-200 border rounded p-6 space-y-4">
+          <h2 className="text-base font-semibold text-black">Basic Info</h2>
 
           <div>
             <label className={labelClass}>Event Name</label>
@@ -180,12 +180,12 @@ export default function CreateEvent() {
           )}
 
           {form.Type !== 'merchandise' && (
-            <div className="border-t border-[#1e2030] pt-4">
+            <div className="border-t border-gray-200 border pt-4">
               <label className="flex items-center gap-3 cursor-pointer">
                 <input type="checkbox" checked={form.isTeamEvent}
                   onChange={(e) => setForm({ ...form, isTeamEvent: e.target.checked })}
                   className="w-4 h-4 accent-[#6366f1]" />
-                <span className="text-sm text-[#8b8fad]">This is a team-based event</span>
+                <span className="text-sm text-gray-600">This is a team-based event</span>
               </label>
               {form.isTeamEvent && (
                 <div className="grid grid-cols-2 gap-4 mt-3">
@@ -207,22 +207,22 @@ export default function CreateEvent() {
 
         {/* Custom Form Builder */}
         {form.Type === 'normal' && (
-          <div className="bg-[#12141d] border border-[#1e2030] rounded-2xl p-6">
+          <div className="bg-gray-50 border border-gray-200 border rounded p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-semibold text-white">Custom Registration Form</h2>
+              <h2 className="text-base font-semibold text-black">Custom Registration Form</h2>
               <button type="button" onClick={addField}
-                className="px-3 py-1.5 bg-[#6366f1] hover:bg-[#818cf8] text-white text-sm rounded-lg cursor-pointer transition-all">
+                className="px-3 py-1.5 bg-black text-white-important hover:bg-gray-900 text-white text-sm rounded cursor-pointer ">
                 + Add Field
               </button>
             </div>
 
             {customForm.length === 0 && (
-              <p className="text-[#3d4162] text-sm">No custom fields yet. Add fields to build a registration form.</p>
+              <p className="text-gray-400 text-sm">No custom fields yet. Add fields to build a registration form.</p>
             )}
 
             <div className="space-y-3">
               {customForm.map((field, i) => (
-                <div key={i} className="bg-[#0c0e14] border border-[#1e2030] rounded-xl p-4">
+                <div key={i} className="bg-white border border-gray-200 border rounded p-4">
                   <div className="grid grid-cols-4 gap-3 mb-2">
                     <input type="text" placeholder="Field name" value={field.name}
                       onChange={(e) => updateField(i, 'name', e.target.value)} className={fieldInput} />
@@ -232,14 +232,14 @@ export default function CreateEvent() {
                       {FIELD_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
                     <div className="flex items-center gap-2">
-                      <label className="flex items-center gap-1 text-xs text-[#8b8fad] cursor-pointer">
+                      <label className="flex items-center gap-1 text-xs text-gray-600 cursor-pointer">
                         <input type="checkbox" checked={field.required}
                           onChange={(e) => updateField(i, 'required', e.target.checked)} className="accent-[#6366f1]" />
                         Req
                       </label>
-                      <button type="button" onClick={() => moveField(i, -1)} className="text-[#6b7394] hover:text-white cursor-pointer text-sm">↑</button>
-                      <button type="button" onClick={() => moveField(i, 1)} className="text-[#6b7394] hover:text-white cursor-pointer text-sm">↓</button>
-                      <button type="button" onClick={() => removeField(i)} className="text-[#f87171] hover:text-[#fca5a5] cursor-pointer text-sm">✕</button>
+                      <button type="button" onClick={() => moveField(i, -1)} className="text-gray-500 hover:text-black cursor-pointer text-sm">↑</button>
+                      <button type="button" onClick={() => moveField(i, 1)} className="text-gray-500 hover:text-black cursor-pointer text-sm">↓</button>
+                      <button type="button" onClick={() => removeField(i)} className="text-black hover:text-gray-600 cursor-pointer text-sm">✕</button>
                     </div>
                   </div>
                   {field.type === 'dropdown' && (
@@ -255,11 +255,11 @@ export default function CreateEvent() {
 
         {/* Merchandise Items */}
         {form.Type === 'merchandise' && (
-          <div className="bg-[#12141d] border border-[#1e2030] rounded-2xl p-6">
+          <div className="bg-gray-50 border border-gray-200 border rounded p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-semibold text-white">Merchandise Items</h2>
+              <h2 className="text-base font-semibold text-black">Merchandise Items</h2>
               <button type="button" onClick={addMerchItem}
-                className="px-3 py-1.5 bg-[#6366f1] hover:bg-[#818cf8] text-white text-sm rounded-lg cursor-pointer transition-all">
+                className="px-3 py-1.5 bg-black text-white-important hover:bg-gray-900 text-white text-sm rounded cursor-pointer ">
                 + Add Item
               </button>
             </div>
@@ -267,17 +267,17 @@ export default function CreateEvent() {
             <div className="space-y-3">
               {merchItems.length > 0 && (
                 <div className="grid grid-cols-7 gap-3 px-4 mb-2">
-                  <div className="text-[11px] font-medium text-[#8b8fad] uppercase tracking-wider">Name</div>
-                  <div className="text-[11px] font-medium text-[#8b8fad] uppercase tracking-wider">Size</div>
-                  <div className="text-[11px] font-medium text-[#8b8fad] uppercase tracking-wider">Color</div>
-                  <div className="text-[11px] font-medium text-[#8b8fad] uppercase tracking-wider">Price (₹)</div>
-                  <div className="text-[11px] font-medium text-[#8b8fad] uppercase tracking-wider">Stock</div>
-                  <div className="text-[11px] font-medium text-[#8b8fad] uppercase tracking-wider">Max/User</div>
+                  <div className="text-[11px] font-medium text-gray-600  ">Name</div>
+                  <div className="text-[11px] font-medium text-gray-600  ">Size</div>
+                  <div className="text-[11px] font-medium text-gray-600  ">Color</div>
+                  <div className="text-[11px] font-medium text-gray-600  ">Price (₹)</div>
+                  <div className="text-[11px] font-medium text-gray-600  ">Stock</div>
+                  <div className="text-[11px] font-medium text-gray-600  ">Max/User</div>
                   <div></div>
                 </div>
               )}
               {merchItems.map((item, i) => (
-                <div key={i} className="bg-[#0c0e14] border border-[#1e2030] rounded-xl p-4">
+                <div key={i} className="bg-white border border-gray-200 border rounded p-4">
                   <div className="grid grid-cols-7 gap-3">
                     <input type="text" placeholder="Name" value={item.name}
                       onChange={(e) => updateMerchItem(i, 'name', e.target.value)} className={fieldInput} />
@@ -294,7 +294,7 @@ export default function CreateEvent() {
                     <input type="number" placeholder="Limit" min={1} value={item.purchaseLimit}
                       onChange={(e) => updateMerchItem(i, 'purchaseLimit', e.target.value)} className={fieldInput} />
                     <button type="button" onClick={() => removeMerchItem(i)}
-                      className="text-[#f87171] hover:text-[#fca5a5] cursor-pointer text-sm flex items-center justify-center">✕</button>
+                      className="text-black hover:text-gray-600 cursor-pointer text-sm flex items-center justify-center">✕</button>
                   </div>
                 </div>
               ))}
@@ -304,12 +304,12 @@ export default function CreateEvent() {
 
         <div className="flex gap-3">
           <button type="submit" disabled={saving}
-            className="flex-1 py-3 bg-[#12141d] border border-[#1e2030] hover:border-[#6366f1] text-white font-medium rounded-xl cursor-pointer transition-all active:scale-[0.98]">
+            className="flex-1 py-3 bg-gray-50 border border-gray-200 border hover:border-black text-black font-medium rounded cursor-pointer  ">
             {saving ? 'Creating...' : 'Save as Draft'}
           </button>
           <button type="button" disabled={saving}
             onClick={handleCreateAndPublish}
-            className="flex-1 py-3 bg-[#6366f1] hover:bg-[#818cf8] disabled:opacity-50 text-white font-medium rounded-xl cursor-pointer transition-all active:scale-[0.98]">
+            className="flex-1 py-3 bg-black text-white-important hover:bg-gray-900 disabled:opacity-50 text-white font-medium rounded cursor-pointer  ">
             {saving ? 'Publishing...' : 'Create & Publish'}
           </button>
         </div>

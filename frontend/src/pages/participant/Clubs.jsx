@@ -36,34 +36,34 @@ export default function Clubs() {
     }
   };
 
-  if (loading) return <div className="max-w-4xl mx-auto px-4 py-8"><div className="text-center py-20"><div className="inline-block w-6 h-6 border-2 border-[#6366f1] border-t-transparent rounded-full animate-spin" /></div></div>;
+  if (loading) return <div className="max-w-4xl mx-auto px-4 py-8"><div className="text-center py-20"><div className="inline-block w-6 h-6 border-2 border-black border-t-transparent rounded animate-spin" /></div></div>;
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-      <h1 className="text-2xl font-bold text-white mb-6">Clubs & Organizers</h1>
+      <h1 className="text-2xl font-bold text-black mb-6">Clubs & Organizers</h1>
 
       {clubs.length === 0 ? (
-        <p className="text-[#3d4162] text-center py-16">No clubs found</p>
+        <p className="text-gray-400 text-center py-16">No clubs found</p>
       ) : (
         <div className="grid md:grid-cols-2 gap-4">
           {clubs.map(club => (
-            <div key={club._id} className="bg-[#12141d] border border-[#1e2030] rounded-xl p-5 hover:border-[#2a2d48] transition-all card-hover">
+            <div key={club._id} className="bg-gray-50 border border-gray-200 border rounded p-5 hover:border-gray-200 border  ">
               <div className="flex items-start justify-between">
-                <Link to={`/clubs/${club._id}`} className="hover:text-[#818cf8] transition">
-                  <h3 className="text-white font-semibold text-base">{club.organizerName}</h3>
-                  <p className="text-xs text-[#818cf8] mt-0.5">{Array.isArray(club.category) ? club.category.join(', ') : club.category}</p>
+                <Link to={`/clubs/${club._id}`} className="hover:text-black font-medium ">
+                  <h3 className="text-black font-semibold text-base">{club.organizerName}</h3>
+                  <p className="text-xs text-black font-medium mt-0.5">{Array.isArray(club.category) ? club.category.join(', ') : club.category}</p>
                 </Link>
                 {user?.role === 'participant' && (
                   <button onClick={() => toggleFollow(club._id)}
-                    className={`px-3 py-1.5 text-xs font-medium rounded-lg cursor-pointer transition-all ${isFollowing(club._id)
-                        ? 'bg-[#1e2030] text-[#6b7394] hover:bg-[#252839] border border-[#1e2030]'
-                        : 'bg-[#6366f1] text-white hover:bg-[#818cf8]'
+                    className={`px-3 py-1.5 text-xs font-medium rounded cursor-pointer  ${isFollowing(club._id)
+                        ? 'bg-gray-100 text-gray-500 hover:bg-gray-300 border border-gray-200 border'
+                        : 'bg-black text-white-important text-white hover:bg-gray-900'
                       }`}>
                     {isFollowing(club._id) ? 'Following' : 'Follow'}
                   </button>
                 )}
               </div>
-              <p className="text-sm text-[#6b7394] mt-2 line-clamp-2 leading-relaxed">{club.description}</p>
+              <p className="text-sm text-gray-500 mt-2 line-clamp-2 leading-relaxed">{club.description}</p>
             </div>
           ))}
         </div>

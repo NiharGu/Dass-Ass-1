@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import io from 'socket.io-client';
 
-const EMOJIS = ['👍', '❤️', '😂', '🎉', '🤔', '👀'];
+const EMOJIS = ['�', '❤️', '�', '🎉', '🤔', '�'];
 
 // Derive backend socket URL from the API URL or fallback
 const getSocketUrl = () => {
@@ -129,18 +129,18 @@ export default function DiscussionForum({ eventId, isOrganizer, onNewMessage }) 
     const replies = regularMessages.filter(m => m.parentMessage);
 
     return (
-        <div className="bg-[#12141d] border border-[#1e2030] rounded-2xl flex flex-col" style={{ height: '500px' }}>
-            <div className="p-4 border-b border-[#1e2030]">
-                <h3 className="text-white font-semibold text-sm">Discussion</h3>
+        <div className="bg-gray-50 border border-gray-200 border rounded flex flex-col" style={{ height: '500px' }}>
+            <div className="p-4 border-b border-gray-200 border">
+                <h3 className="text-black font-semibold text-sm">Discussion</h3>
             </div>
 
             {/* Pinned Messages */}
             {pinnedMessages.length > 0 && (
-                <div className="px-4 py-2 bg-[#78350f]/10 border-b border-[#1e2030]">
+                <div className="px-4 py-2 bg-gray-100/10 border-b border-gray-200 border">
                     {pinnedMessages.map(m => (
                         <div key={m._id} className="flex items-start gap-2 text-sm py-1">
-                            <span className="text-yellow-400">📌</span>
-                            <span className="text-[#8b8fad]"><strong>{getAuthorName(m.author)}</strong>: {m.content}</span>
+                            <span className="text-black">Pin</span>
+                            <span className="text-gray-600"><strong>{getAuthorName(m.author)}</strong>: {m.content}</span>
                         </div>
                     ))}
                 </div>
@@ -184,24 +184,24 @@ export default function DiscussionForum({ eventId, isOrganizer, onNewMessage }) 
             </div>
 
             {/* Input */}
-            <div className="p-3 border-t border-[#1e2030]">
+            <div className="p-3 border-t border-gray-200 border">
                 {replyTo && (
-                    <div className="flex items-center gap-2 text-sm text-[#6b7394] mb-2">
+                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
                         <span>Replying to <strong>{getAuthorName(replyTo.author)}</strong></span>
-                        <button onClick={() => setReplyTo(null)} className="text-[#f87171] cursor-pointer">✕</button>
+                        <button onClick={() => setReplyTo(null)} className="text-black cursor-pointer">✕</button>
                     </div>
                 )}
                 <form onSubmit={handleSend} className="flex gap-2">
                     <input type="text" value={newMsg} onChange={e => setNewMsg(e.target.value)}
                         placeholder="Type a message..."
-                        className="flex-1 px-3 py-2 bg-[#0c0e14] border border-[#1e2030] rounded-lg text-white text-sm focus:outline-none focus:border-[#6366f1]" />
+                        className="flex-1 px-3 py-2 bg-white border border-gray-200 border rounded text-black text-sm focus:outline-none focus:border-black" />
                     {isOrganizer && (
                         <label className="flex items-center gap-1 text-xs text-gray-400 cursor-pointer select-none">
                             <input type="checkbox" checked={isAnnouncement} onChange={e => setIsAnnouncement(e.target.checked)} />
-                            📢
+                            
                         </label>
                     )}
-                    <button type="submit" className="px-4 py-2 bg-[#6366f1] hover:bg-[#818cf8] text-white text-sm rounded-lg cursor-pointer transition-all">
+                    <button type="submit" className="px-4 py-2 bg-black text-white-important hover:bg-gray-900 text-white text-sm rounded cursor-pointer ">
                         Send
                     </button>
                 </form>
@@ -214,24 +214,24 @@ function MessageBubble({ msg, isOrganizer, isMine, onDelete, onPin, onReact, onR
     const [showReactions, setShowReactions] = useState(false);
 
     return (
-        <div className={`group ${msg.isAnnouncement ? 'bg-[#312e81]/15 border border-[#312e81]/30 rounded-lg p-2' : ''}`}>
+        <div className={` ${msg.isAnnouncement ? 'bg-gray-100/15 border border-gray-300/30 rounded p-2' : ''}`}>
             <div className="flex items-start gap-2">
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                        <span className={`text-xs font-medium ${msg.author?.role === 'organizer' ? 'text-[#818cf8]' : 'text-[#8b8fad]'}`}>
+                        <span className={`text-xs font-medium ${msg.author?.role === 'organizer' ? 'text-black font-medium' : 'text-gray-600'}`}>
                             {getAuthorName(msg.author)}
                         </span>
-                        {msg.isAnnouncement && <span className="text-xs text-[#818cf8]">📢</span>}
-                        <span className="text-xs text-[#3d4162]">{new Date(msg.createdAt).toLocaleTimeString()}</span>
+                        {msg.isAnnouncement && <span className="text-xs text-black font-medium"></span>}
+                        <span className="text-xs text-gray-400">{new Date(msg.createdAt).toLocaleTimeString()}</span>
                     </div>
-                    <p className="text-sm text-[#e2e4ef] mt-0.5">{msg.content}</p>
+                    <p className="text-sm text-gray-900 mt-0.5">{msg.content}</p>
 
                     {/* Reactions display */}
                     {msg.reactions && Object.keys(msg.reactions).length > 0 && (
                         <div className="flex gap-1 mt-1 flex-wrap">
                             {Object.entries(msg.reactions).map(([emoji, users]) => (
                                 <button key={emoji} onClick={() => onReact(msg._id, emoji)}
-                                    className={`text-xs px-1.5 py-0.5 rounded-full cursor-pointer transition ${(Array.isArray(users) && users.includes(userId)) ? 'bg-[#312e81]/40 border border-[#4338ca]' : 'bg-[#0c0e14] border border-[#1e2030]'
+                                    className={`text-xs px-1.5 py-0.5 rounded cursor-pointer  ${(Array.isArray(users) && users.includes(userId)) ? 'bg-gray-100/40 border border-gray-300' : 'bg-white border border-gray-200 border'
                                         }`}>
                                     {emoji} {Array.isArray(users) ? users.length : 0}
                                 </button>
@@ -241,20 +241,20 @@ function MessageBubble({ msg, isOrganizer, isMine, onDelete, onPin, onReact, onR
                 </div>
 
                 {/* Actions */}
-                <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 transition">
-                    <button onClick={() => setShowReactions(!showReactions)} className="text-gray-500 hover:text-white text-xs cursor-pointer">😀</button>
-                    {!isReply && <button onClick={() => onReply()} className="text-gray-500 hover:text-white text-xs cursor-pointer">↩</button>}
-                    {isOrganizer && <button onClick={() => onPin(msg._id)} className="text-gray-500 hover:text-yellow-400 text-xs cursor-pointer">📌</button>}
-                    {isOrganizer && <button onClick={() => onDelete(msg._id)} className="text-gray-500 hover:text-red-400 text-xs cursor-pointer">🗑</button>}
+                <div className="  flex items-center gap-1 ">
+                    <button onClick={() => setShowReactions(!showReactions)} className="text-gray-500 hover:text-black text-xs cursor-pointer">React</button>
+                    {!isReply && <button onClick={() => onReply()} className="text-gray-500 hover:text-black text-xs cursor-pointer">Reply</button>}
+                    {isOrganizer && <button onClick={() => onPin(msg._id)} className="text-gray-500 hover:text-black text-xs cursor-pointer">Pin</button>}
+                    {isOrganizer && <button onClick={() => onDelete(msg._id)} className="text-gray-500 hover:text-black text-xs cursor-pointer">Delete</button>}
                 </div>
             </div>
 
             {/* Reaction Picker */}
             {showReactions && (
-                <div className="flex gap-1 mt-1 bg-[#0c0e14] border border-[#1e2030] rounded-lg p-1 inline-flex">
+                <div className="flex gap-1 mt-1 bg-white border border-gray-200 border rounded p-1 inline-flex">
                     {EMOJIS.map(emoji => (
                         <button key={emoji} onClick={() => { onReact(msg._id, emoji); setShowReactions(false); }}
-                            className="hover:bg-[#1e2030] px-1 rounded cursor-pointer transition">{emoji}</button>
+                            className="hover:bg-gray-300 px-1 rounded cursor-pointer ">{emoji}</button>
                     ))}
                 </div>
             )}

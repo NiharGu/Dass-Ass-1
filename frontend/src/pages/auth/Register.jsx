@@ -41,20 +41,20 @@ export default function Register() {
     }
   };
 
-  const inputClass = "w-full px-4 py-2.5 bg-[#0c0e14] border border-[#1e2030] rounded-xl text-white placeholder-[#3d4162] focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]/30";
-  const labelClass = "block text-xs font-medium text-[#8b8fad] mb-1.5 uppercase tracking-wider";
+  const inputClass = "w-full px-4 py-2.5 bg-white border border-gray-200 border rounded text-black placeholder-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/30";
+  const labelClass = "block text-xs font-medium text-gray-600 mb-1.5  ";
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0c0e14] px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-white px-4 py-12">
       <div className="w-full max-w-lg">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold tracking-tight text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            <span className="text-[#818cf8]">f</span>elicity
+          <h1 className="text-4xl font-bold  text-black" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            <span className="text-black font-medium">f</span>elicity
           </h1>
-          <p className="text-[#6b7394] mt-2 text-sm">Create your participant account</p>
+          <p className="text-gray-500 mt-2 text-sm">Create your participant account</p>
         </div>
 
-        <div className="bg-[#12141d] rounded-2xl p-8 border border-[#1e2030] shadow-2xl shadow-black/40">
+        <div className="bg-gray-50 rounded p-8 border border-gray-200 border shadow shadow -200">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -81,7 +81,7 @@ export default function Register() {
                 placeholder={form.participantType === 'iiit' ? 'yourname@iiit.ac.in' : 'you@example.com'}
                 className={inputClass} />
               {form.participantType === 'iiit' && (
-                <p className="text-xs text-[#3d4162] mt-1">Must use IIIT-issued email ID</p>
+                <p className="text-xs text-gray-400 mt-1">Must use IIIT-issued email ID</p>
               )}
             </div>
 
@@ -107,13 +107,13 @@ export default function Register() {
             </div>
 
             <button type="submit" disabled={loading}
-              className="w-full py-2.5 bg-[#6366f1] hover:bg-[#818cf8] disabled:opacity-50 text-white font-medium rounded-xl cursor-pointer transition-all active:scale-[0.98]">
+              className="w-full py-2.5 bg-black text-white-important hover:bg-gray-900 disabled:opacity-50 text-white font-medium rounded cursor-pointer  ">
               {loading ? 'Creating account...' : 'Register'}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-[#6b7394]">
-            Already have an account? <Link to="/login" className="text-[#818cf8] hover:text-[#a5b4fc] transition">Sign in</Link>
+          <p className="mt-6 text-center text-sm text-gray-500">
+            Already have an account? <Link to="/login" className="text-black font-medium hover:text-gray-600 ">Sign in</Link>
           </p>
         </div>
       </div>

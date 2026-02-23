@@ -118,28 +118,28 @@ export default function EventDetails() {
 
 
 
-  const inputClass = "w-full px-4 py-2.5 bg-[#0c0e14] border border-[#1e2030] rounded-xl text-white placeholder-[#3d4162] focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]/30";
+  const inputClass = "w-full px-4 py-2.5 bg-white border border-gray-200 border rounded text-black placeholder-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/30";
 
-  if (loading) return <div className="max-w-4xl mx-auto px-4 py-8"><div className="text-center py-20"><div className="inline-block w-6 h-6 border-2 border-[#6366f1] border-t-transparent rounded-full animate-spin" /></div></div>;
-  if (!event) return <div className="max-w-4xl mx-auto px-4 py-8"><p className="text-[#6b7394]">Event not found</p></div>;
+  if (loading) return <div className="max-w-4xl mx-auto px-4 py-8"><div className="text-center py-20"><div className="inline-block w-6 h-6 border-2 border-black border-t-transparent rounded animate-spin" /></div></div>;
+  if (!event) return <div className="max-w-4xl mx-auto px-4 py-8"><p className="text-gray-500">Event not found</p></div>;
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
-      <div className="bg-[#12141d] border border-[#1e2030] rounded-2xl p-8">
+      <div className="bg-gray-50 border border-gray-200 border rounded p-8">
         <div className="flex items-start justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-white">{event.Name}</h1>
-            <p className="text-[#6b7394] mt-1 text-sm">{event.organizer?.organizerName || 'Unknown Organizer'}</p>
+            <h1 className="text-2xl font-bold text-black">{event.Name}</h1>
+            <p className="text-gray-500 mt-1 text-sm">{event.organizer?.organizerName || 'Unknown Organizer'}</p>
           </div>
           <div className="flex gap-2">
-            <span className={`text-[10px] px-2.5 py-1 rounded-full font-medium uppercase tracking-wide ${event.Type === 'merchandise' ? 'bg-[#78350f]/30 text-[#fbbf24]' : 'bg-[#1e3a5f]/30 text-[#60a5fa]'
+            <span className={`text-[10px] px-2.5 py-1 rounded font-medium  tracking-wide ${event.Type === 'merchandise' ? 'bg-gray-100 text-black' : 'bg-gray-100/30 text-black'
               }`}>{event.Type}</span>
-            <span className={`text-[10px] px-2.5 py-1 rounded-full font-medium capitalize uppercase tracking-wide ${event.eligibility === 'open' ? 'bg-[#065f46]/30 text-[#34d399]' : 'bg-[#3b0764]/30 text-[#c084fc]'
+            <span className={`text-[10px] px-2.5 py-1 rounded font-medium capitalize  tracking-wide ${event.eligibility === 'open' ? 'bg-gray-100 text-black' : 'bg-gray-100/30 text-black'
               }`}>{event.eligibility}</span>
           </div>
         </div>
 
-        <p className="text-[#8b8fad] mb-6 whitespace-pre-wrap leading-relaxed">{event.Description}</p>
+        <p className="text-gray-600 mb-6 whitespace-pre-wrap leading-relaxed">{event.Description}</p>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           {[
@@ -148,9 +148,9 @@ export default function EventDetails() {
             { label: 'Deadline', value: new Date(event.registrationDeadline).toLocaleDateString() },
             { label: 'Fee', value: event.registrationFee > 0 ? `₹${event.registrationFee}` : 'Free' },
           ].map((item, i) => (
-            <div key={i} className="bg-[#0c0e14] border border-[#1e2030] rounded-xl p-3">
-              <p className="text-[10px] text-[#3d4162] uppercase tracking-wider font-medium">{item.label}</p>
-              <p className="text-sm text-white mt-0.5">{item.value}</p>
+            <div key={i} className="bg-white border border-gray-200 border rounded p-3">
+              <p className="text-[10px] text-gray-400   font-medium">{item.label}</p>
+              <p className="text-sm text-black mt-0.5">{item.value}</p>
             </div>
           ))}
         </div>
@@ -158,25 +158,25 @@ export default function EventDetails() {
         {event.Tags?.length > 0 && (
           <div className="flex gap-2 mb-6 flex-wrap">
             {event.Tags.map((tag, i) => (
-              <span key={i} className="text-xs px-2.5 py-1 bg-[#0c0e14] border border-[#1e2030] text-[#6b7394] rounded-full">{tag}</span>
+              <span key={i} className="text-xs px-2.5 py-1 bg-white border border-gray-200 border text-gray-500 rounded">{tag}</span>
             ))}
           </div>
         )}
 
         {/* Registration Status */}
         {myRegistration && (
-          <div className="bg-[#065f46]/10 border border-[#065f46]/30 rounded-xl p-4 mb-6">
-            <p className="text-[#34d399] font-medium text-sm">You are registered</p>
-            <div className="flex flex-wrap gap-4 mt-2 text-xs text-[#8b8fad]">
-              <span>Status: <span className="text-[#34d399] capitalize">{myRegistration.status}</span></span>
-              {myRegistration.teamName && <span>Team: <span className="text-[#818cf8]">{myRegistration.teamName}</span></span>}
-              <span>Ticket: <span className="font-mono text-[#818cf8]">{myRegistration.ticketId}</span></span>
+          <div className="bg-gray-100/10 border border-gray-300 rounded p-4 mb-6">
+            <p className="text-black font-medium text-sm">You are registered</p>
+            <div className="flex flex-wrap gap-4 mt-2 text-xs text-gray-600">
+              <span>Status: <span className="text-black capitalize">{myRegistration.status}</span></span>
+              {myRegistration.teamName && <span>Team: <span className="text-black font-medium">{myRegistration.teamName}</span></span>}
+              <span>Ticket: <span className="font-mono text-black font-medium">{myRegistration.ticketId}</span></span>
             </div>
             {myRegistration.merchandiseSelections && myRegistration.merchandiseSelections.length > 0 && (
               <div className="mt-3">
-                <p className="text-xs text-[#6b7394] mb-1">Purchased:</p>
+                <p className="text-xs text-gray-500 mb-1">Purchased:</p>
                 {myRegistration.merchandiseSelections.map((item, i) => (
-                  <p key={i} className="text-xs text-[#8b8fad]">
+                  <p key={i} className="text-xs text-gray-600">
                     {item.itemName} {item.size && `(${item.size})`} {item.color && `/ ${item.color}`} × {item.quantity}
                   </p>
                 ))}
@@ -189,13 +189,13 @@ export default function EventDetails() {
 
         {/* Custom Form */}
         {event.customForm?.length > 0 && isPublished && !deadlinePassed && user?.role === 'participant' && !myRegistration && (
-          <div className="border-t border-[#1e2030] pt-6 mb-6">
-            <h2 className="text-base font-semibold text-white mb-4">Registration Form</h2>
+          <div className="border-t border-gray-200 border pt-6 mb-6">
+            <h2 className="text-base font-semibold text-black mb-4">Registration Form</h2>
             <div className="space-y-4">
               {event.customForm.map((field, i) => (
                 <div key={i}>
-                  <label className="block text-xs font-medium text-[#8b8fad] mb-1.5 uppercase tracking-wider">
-                    {field.label || field.name} {field.required && <span className="text-[#f87171]">*</span>}
+                  <label className="block text-xs font-medium text-gray-600 mb-1.5  ">
+                    {field.label || field.name} {field.required && <span className="text-black">*</span>}
                   </label>
                   {field.type === 'dropdown' ? (
                     <select value={formResponses[field.name] || ''}
@@ -205,7 +205,7 @@ export default function EventDetails() {
                       {field.options?.map((opt, j) => <option key={j} value={opt}>{opt}</option>)}
                     </select>
                   ) : field.type === 'checkbox' ? (
-                    <label className="flex items-center gap-2 text-sm text-[#8b8fad] cursor-pointer">
+                    <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
                       <input type="checkbox" checked={!!formResponses[field.name]}
                         onChange={(e) => setFormResponses({ ...formResponses, [field.name]: e.target.checked })}
                         className="accent-[#6366f1]" />
@@ -220,18 +220,18 @@ export default function EventDetails() {
                       <div className="relative">
                         <input type="file"
                           onChange={(e) => handleFileUpload(field.name, e.target.files?.[0])}
-                          className="w-full px-4 py-2.5 bg-[#0c0e14] border border-[#1e2030] rounded-xl text-sm text-[#8b8fad] file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-[#6366f1] file:text-white file:text-xs file:cursor-pointer cursor-pointer focus:outline-none focus:border-[#6366f1]"
+                          className="w-full px-4 py-2.5 bg-white border border-gray-200 border rounded text-sm text-gray-600 file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:bg-black text-white-important file:text-white file:text-xs file:cursor-pointer cursor-pointer focus:outline-none focus:border-black"
                           disabled={uploading[field.name]}
                         />
                         {uploading[field.name] && (
                           <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                            <div className="w-4 h-4 border-2 border-[#6366f1] border-t-transparent rounded-full animate-spin" />
+                            <div className="w-4 h-4 border-2 border-black border-t-transparent rounded animate-spin" />
                           </div>
                         )}
                       </div>
                       {formResponses[field.name] && (
-                        <p className="text-xs text-[#34d399] mt-1.5">
-                          Uploaded — <a href={formResponses[field.name]} target="_blank" rel="noopener noreferrer" className="underline hover:text-[#6ee7b7]">View file</a>
+                        <p className="text-xs text-black mt-1.5">
+                          Uploaded — <a href={formResponses[field.name]} target="_blank" rel="noopener noreferrer" className="underline hover:text-black">View file</a>
                         </p>
                       )}
                     </div>
@@ -248,14 +248,14 @@ export default function EventDetails() {
 
         {/* Merchandise */}
         {event.Type === 'merchandise' && event.merchandiseDetails?.items?.length > 0 && isPublished && !deadlinePassed && user?.role === 'participant' && (
-          <div className="border-t border-[#1e2030] pt-6 mb-6">
-            <h2 className="text-base font-semibold text-white mb-4">Merchandise</h2>
+          <div className="border-t border-gray-200 border pt-6 mb-6">
+            <h2 className="text-base font-semibold text-black mb-4">Merchandise</h2>
             <div className="space-y-3">
               {event.merchandiseDetails.items.map((item, i) => (
-                <div key={i} className="flex items-center justify-between bg-[#0c0e14] border border-[#1e2030] rounded-xl p-4">
+                <div key={i} className="flex items-center justify-between bg-white border border-gray-200 border rounded p-4">
                   <div>
-                    <p className="text-white font-medium text-sm">{item.name}</p>
-                    <p className="text-xs text-[#6b7394] mt-0.5">
+                    <p className="text-black font-medium text-sm">{item.name}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
                       {item.size && `Size: ${item.size}`} {item.color && `• ${item.color}`}
                       {' '}• ₹{item.price || 0} • Stock: {item.stock}
                       {item.purchaseLimit && ` • Max: ${item.purchaseLimit}`}
@@ -263,10 +263,10 @@ export default function EventDetails() {
                   </div>
                   <div className="flex items-center gap-2">
                     <button onClick={() => updateMerchQty(i, (merchSelections[i]?.quantity || 0) - 1)}
-                      className="w-7 h-7 bg-[#1e2030] rounded-lg text-white text-sm cursor-pointer hover:bg-[#252839] transition">-</button>
-                    <span className="w-6 text-center text-white text-sm">{merchSelections[i]?.quantity || 0}</span>
+                      className="w-7 h-7 bg-gray-100 rounded text-black text-sm cursor-pointer hover:bg-gray-300 ">-</button>
+                    <span className="w-6 text-center text-black text-sm">{merchSelections[i]?.quantity || 0}</span>
                     <button onClick={() => updateMerchQty(i, (merchSelections[i]?.quantity || 0) + 1)}
-                      className="w-7 h-7 bg-[#1e2030] rounded-lg text-white text-sm cursor-pointer hover:bg-[#252839] transition">+</button>
+                      className="w-7 h-7 bg-gray-100 rounded text-black text-sm cursor-pointer hover:bg-gray-300 ">+</button>
                   </div>
                 </div>
               ))}
@@ -276,44 +276,44 @@ export default function EventDetails() {
 
         {/* Register / Team Section */}
         {user?.role === 'participant' && isPublished && (
-          <div className="border-t border-[#1e2030] pt-6">
+          <div className="border-t border-gray-200 border pt-6">
             {deadlinePassed ? (
-              <p className="text-[#f87171] text-center text-sm">Registration deadline has passed</p>
+              <p className="text-black text-center text-sm">Registration deadline has passed</p>
             ) : event.isTeamEvent && !myRegistration ? (
               /* ── Team Event Registration ── */
               <div>
                 {myTeam ? (
                   /* Team Management Panel */
-                  <div className="bg-[#0c0e14] border border-[#1e2030] rounded-xl p-5 space-y-4">
+                  <div className="bg-white border border-gray-200 border rounded p-5 space-y-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-white font-semibold text-sm">Team: {myTeam.name}</h3>
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium uppercase tracking-wide ${myTeam.status === 'complete' ? 'bg-[#065f46]/30 text-[#34d399]' : 'bg-[#78350f]/30 text-[#fbbf24]'
+                      <h3 className="text-black font-semibold text-sm">Team: {myTeam.name}</h3>
+                      <span className={`text-[10px] px-2 py-0.5 rounded font-medium  tracking-wide ${myTeam.status === 'complete' ? 'bg-gray-100 text-black' : 'bg-gray-100 text-black'
                         }`}>{myTeam.status === 'complete' ? 'Registered' : 'Forming'}</span>
                     </div>
 
                     {/* Invite Code */}
                     {myTeam.status === 'forming' && (
-                      <div className="bg-[#12141d] rounded-lg p-3">
-                        <p className="text-[10px] text-[#6b7394] uppercase tracking-wider mb-1">Invite Code</p>
+                      <div className="bg-gray-50 rounded p-3">
+                        <p className="text-[10px] text-gray-500   mb-1">Invite Code</p>
                         <div className="flex items-center gap-2">
-                          <code className="text-[#818cf8] font-mono text-lg font-bold tracking-widest">{myTeam.inviteCode}</code>
+                          <code className="text-black font-medium font-mono text-lg font-bold tracking-widest">{myTeam.inviteCode}</code>
                           <button onClick={() => { navigator.clipboard.writeText(myTeam.inviteCode); toast.success('Code copied!'); }}
-                            className="text-xs text-[#6b7394] hover:text-white cursor-pointer transition">Copy</button>
+                            className="text-xs text-gray-500 hover:text-black cursor-pointer ">Copy</button>
                         </div>
-                        <p className="text-[10px] text-[#3d4162] mt-1">Share this code with teammates to join</p>
+                        <p className="text-[10px] text-gray-400 mt-1">Share this code with teammates to join</p>
                       </div>
                     )}
 
                     {/* Members */}
                     <div>
-                      <p className="text-[10px] text-[#6b7394] uppercase tracking-wider mb-2">
+                      <p className="text-[10px] text-gray-500   mb-2">
                         Members ({myTeam.members?.length || 0}/{myTeam.maxSize}) — Min: {event.minTeamSize}
                       </p>
                       <div className="space-y-1">
                         {myTeam.members?.map(m => (
-                          <div key={m._id} className="flex items-center justify-between text-sm py-1.5 px-3 bg-[#12141d] rounded-lg">
-                            <span className="text-white">{m.firstName} {m.lastName}</span>
-                            <span className="text-[10px] text-[#3d4162]">
+                          <div key={m._id} className="flex items-center justify-between text-sm py-1.5 px-3 bg-gray-50 rounded">
+                            <span className="text-black">{m.firstName} {m.lastName}</span>
+                            <span className="text-[10px] text-gray-400">
                               {m._id === (myTeam.leader?._id || myTeam.leader) ? 'Leader' : 'Member'}
                             </span>
                           </div>
@@ -345,7 +345,7 @@ export default function EventDetails() {
                             } finally { setTeamLoading(false); }
                           }}
                           disabled={teamLoading || (myTeam.members?.length || 0) < event.minTeamSize}
-                          className="flex-1 py-2.5 bg-[#6366f1] hover:bg-[#818cf8] disabled:opacity-40 text-white font-medium rounded-xl cursor-pointer transition-all text-sm"
+                          className="flex-1 py-2.5 bg-black text-white-important hover:bg-gray-900 disabled:opacity-40 text-white font-medium rounded cursor-pointer  text-sm"
                         >
                           {teamLoading ? 'Registering...' : `Register Team (${myTeam.members?.length || 0}/${event.minTeamSize} min)`}
                         </button>
@@ -358,7 +358,7 @@ export default function EventDetails() {
                               toast.success('Team cancelled');
                             } catch (err) { toast.error(err.response?.data?.message || 'Failed'); }
                           }}
-                          className="px-4 py-2.5 bg-[#7f1d1d]/30 hover:bg-[#7f1d1d]/50 text-[#f87171] font-medium rounded-xl cursor-pointer transition-all text-sm"
+                          className="px-4 py-2.5 bg-gray-100 hover:bg-gray-400 text-black font-medium rounded cursor-pointer  text-sm"
                         >Cancel</button>
                       </div>
                     )}
@@ -374,24 +374,24 @@ export default function EventDetails() {
                             toast.success('Left team');
                           } catch (err) { toast.error(err.response?.data?.message || 'Failed'); }
                         }}
-                        className="w-full py-2 bg-[#7f1d1d]/20 hover:bg-[#7f1d1d]/40 text-[#f87171] text-sm rounded-xl cursor-pointer transition-all"
+                        className="w-full py-2 bg-gray-100/20 hover:bg-gray-300/40 text-black text-sm rounded cursor-pointer "
                       >Leave Team</button>
                     )}
                   </div>
                 ) : (
                   /* Create or Join Team Options */
                   <div className="space-y-3">
-                    <p className="text-sm text-[#8b8fad] text-center mb-2">
+                    <p className="text-sm text-gray-600 text-center mb-2">
                       This is a team event ({event.minTeamSize}–{event.maxTeamSize} members)
                     </p>
                     {!teamMode ? (
                       <div className="flex gap-3">
                         <button onClick={() => setTeamMode('create')}
-                          className="flex-1 py-3 bg-[#6366f1] hover:bg-[#818cf8] text-white font-medium rounded-xl cursor-pointer transition-all text-sm">
+                          className="flex-1 py-3 bg-black text-white-important hover:bg-gray-900 text-white font-medium rounded cursor-pointer  text-sm">
                           Create Team
                         </button>
                         <button onClick={() => setTeamMode('join')}
-                          className="flex-1 py-3 bg-[#0c0e14] border border-[#1e2030] hover:border-[#6366f1] text-white font-medium rounded-xl cursor-pointer transition-all text-sm">
+                          className="flex-1 py-3 bg-white border border-gray-200 border hover:border-black text-black font-medium rounded cursor-pointer  text-sm">
                           Join Team
                         </button>
                       </div>
@@ -413,10 +413,10 @@ export default function EventDetails() {
                               finally { setTeamLoading(false); }
                             }}
                             disabled={teamLoading}
-                            className="flex-1 py-2.5 bg-[#6366f1] hover:bg-[#818cf8] disabled:opacity-50 text-white font-medium rounded-xl cursor-pointer transition-all text-sm"
+                            className="flex-1 py-2.5 bg-black text-white-important hover:bg-gray-900 disabled:opacity-50 text-white font-medium rounded cursor-pointer  text-sm"
                           >{teamLoading ? 'Creating...' : 'Create'}</button>
                           <button onClick={() => setTeamMode(null)}
-                            className="px-4 py-2.5 bg-[#1e2030] text-[#8b8fad] rounded-xl cursor-pointer transition-all text-sm hover:bg-[#252839]"
+                            className="px-4 py-2.5 bg-gray-100 text-gray-600 rounded cursor-pointer  text-sm hover:bg-gray-300"
                           >Back</button>
                         </div>
                       </div>
@@ -441,10 +441,10 @@ export default function EventDetails() {
                               finally { setTeamLoading(false); }
                             }}
                             disabled={teamLoading}
-                            className="flex-1 py-2.5 bg-[#6366f1] hover:bg-[#818cf8] disabled:opacity-50 text-white font-medium rounded-xl cursor-pointer transition-all text-sm"
+                            className="flex-1 py-2.5 bg-black text-white-important hover:bg-gray-900 disabled:opacity-50 text-white font-medium rounded cursor-pointer  text-sm"
                           >{teamLoading ? 'Joining...' : 'Join'}</button>
                           <button onClick={() => setTeamMode(null)}
-                            className="px-4 py-2.5 bg-[#1e2030] text-[#8b8fad] rounded-xl cursor-pointer transition-all text-sm hover:bg-[#252839]"
+                            className="px-4 py-2.5 bg-gray-100 text-gray-600 rounded cursor-pointer  text-sm hover:bg-gray-300"
                           >Back</button>
                         </div>
                       </div>
@@ -455,7 +455,7 @@ export default function EventDetails() {
             ) : !myRegistration ? (
               /* Normal event register button */
               <button onClick={handleRegister} disabled={registering}
-                className="w-full py-3 bg-[#6366f1] hover:bg-[#818cf8] disabled:opacity-50 text-white font-medium rounded-xl cursor-pointer transition-all active:scale-[0.98]">
+                className="w-full py-3 bg-black text-white-important hover:bg-gray-900 disabled:opacity-50 text-white font-medium rounded cursor-pointer  ">
                 {registering ? 'Registering...' : event.Type === 'merchandise' ? 'Purchase' : 'Register'}
               </button>
             ) : null}
@@ -467,10 +467,10 @@ export default function EventDetails() {
       {user && isPublished && (
         <div className="mt-6">
           <button onClick={() => { setShowForum(!showForum); setUnreadCount(0); }}
-            className="w-full py-3 bg-[#12141d] border border-[#1e2030] hover:border-[#2a2d48] text-white font-medium rounded-2xl cursor-pointer transition-all text-sm relative">
+            className="w-full py-3 bg-gray-50 border border-gray-200 border hover:border-gray-200 border text-black font-medium rounded cursor-pointer  text-sm relative">
             {showForum ? 'Hide Discussion' : 'Discussion Forum'}
             {!showForum && unreadCount > 0 && (
-              <span className="absolute -top-2 -right-2 min-w-[20px] h-5 px-1.5 flex items-center justify-center bg-[#6366f1] text-white text-xs font-bold rounded-full animate-pulse">
+              <span className="absolute -top-2 -right-2 min-w-[20px] h-5 px-1.5 flex items-center justify-center bg-black text-white-important text-white text-xs font-bold rounded animate-pulse">
                 {unreadCount}
               </span>
             )}

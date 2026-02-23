@@ -62,22 +62,22 @@ export default function BrowseEvents() {
     setFilters(prev => ({ ...prev, [key]: val }));
   };
 
-  const selectClass = "px-3 py-2 bg-[#0c0e14] border border-[#1e2030] rounded-lg text-sm text-[#8b8fad] focus:outline-none focus:border-[#6366f1]";
+  const selectClass = "px-3 py-2 bg-white border border-gray-200 border rounded text-sm text-gray-600 focus:outline-none focus:border-black";
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-      <h1 className="text-2xl font-bold text-white mb-6">Browse Events</h1>
+      <h1 className="text-2xl font-bold text-black mb-6">Browse Events</h1>
 
       {trending.length > 0 && (
         <div className="mb-8">
-          <h2 className="text-sm font-semibold text-[#818cf8] uppercase tracking-wider mb-3">🔥 Trending</h2>
+          <h2 className="text-sm font-semibold text-black font-medium   mb-3"> Trending</h2>
           <div className="flex gap-3 overflow-x-auto pb-2">
             {trending.map(ev => (
               <Link key={ev._id} to={`/events/${ev._id}`}
-                className="min-w-[240px] bg-gradient-to-br from-[#1a1c2e] to-[#171927] border border-[#2a2d48] rounded-xl p-4 hover:border-[#6366f1]/50 transition-all card-hover">
-                <p className="text-white font-semibold truncate text-sm">{ev.Name}</p>
-                <p className="text-xs text-[#6b7394] mt-1">{ev.registrationCount} registrations</p>
-                <p className="text-xs text-[#3d4162] mt-1">{ev.organizer?.organizerName}</p>
+                className="min-w-[240px] bg-white border border-gray-200 border rounded p-4 hover:border-black/50  ">
+                <p className="text-black font-semibold truncate text-sm">{ev.Name}</p>
+                <p className="text-xs text-gray-500 mt-1">{ev.registrationCount} registrations</p>
+                <p className="text-xs text-gray-400 mt-1">{ev.organizer?.organizerName}</p>
               </Link>
             ))}
           </div>
@@ -85,10 +85,10 @@ export default function BrowseEvents() {
       )}
 
       {/* Filters */}
-      <div className="bg-[#12141d] border border-[#1e2030] rounded-xl p-4 mb-6">
+      <div className="bg-gray-50 border border-gray-200 border rounded p-4 mb-6">
         <input type="text" value={search} onChange={(e) => setSearch(e.target.value)}
           placeholder="Search events or organizers..."
-          className="w-full px-4 py-2.5 bg-[#0c0e14] border border-[#1e2030] rounded-xl text-white placeholder-[#3d4162] focus:outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]/30 mb-3" />
+          className="w-full px-4 py-2.5 bg-white border border-gray-200 border rounded text-black placeholder-gray-400 focus:outline-none focus:border-black focus:ring-1 focus:ring-black/30 mb-3" />
         <div className="flex flex-wrap gap-3">
           <select value={filters.eventType} onChange={setFilter('eventType')} className={selectClass}>
             <option value="">All Types</option>
@@ -103,7 +103,7 @@ export default function BrowseEvents() {
           </select>
           <input type="date" value={filters.startDate} onChange={setFilter('startDate')} className={selectClass} />
           <input type="date" value={filters.endDate} onChange={setFilter('endDate')} className={selectClass} />
-          <label className="flex items-center gap-2 text-sm text-[#8b8fad] cursor-pointer">
+          <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
             <input type="checkbox" checked={filters.followedClubs}
               onChange={(e) => setFilters(prev => ({ ...prev, followedClubs: e.target.checked }))}
               className="rounded accent-[#6366f1]" />
@@ -114,43 +114,43 @@ export default function BrowseEvents() {
 
       {loading ? (
         <div className="text-center py-20">
-          <div className="inline-block w-6 h-6 border-2 border-[#6366f1] border-t-transparent rounded-full animate-spin" />
+          <div className="inline-block w-6 h-6 border-2 border-black border-t-transparent rounded animate-spin" />
         </div>
       ) : events.length === 0 ? (
-        <p className="text-[#3d4162] text-center py-16">No events found</p>
+        <p className="text-gray-400 text-center py-16">No events found</p>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {events.map(ev => (
             <Link key={ev._id} to={`/events/${ev._id}`}
-              className="bg-[#12141d] border border-[#1e2030] rounded-xl p-5 hover:border-[#2a2d48] transition-all group card-hover">
+              className="bg-gray-50 border border-gray-200 border rounded p-5 hover:border-gray-200 border   ">
               <div className="flex items-start justify-between mb-3">
-                <h3 className="text-white font-semibold group-hover:text-[#818cf8] transition truncate mr-2 text-[15px]">{ev.Name}</h3>
-                <span className={`text-[10px] px-2 py-0.5 rounded-full shrink-0 font-medium uppercase tracking-wide ${ev.Type === 'merchandise' ? 'bg-[#78350f]/30 text-[#fbbf24]' : 'bg-[#1e3a5f]/30 text-[#60a5fa]'
+                <h3 className="text-black font-semibold -hover:text-black font-medium  truncate mr-2 text-[15px]">{ev.Name}</h3>
+                <span className={`text-[10px] px-2 py-0.5 rounded shrink-0 font-medium  tracking-wide ${ev.Type === 'merchandise' ? 'bg-gray-100 text-black' : 'bg-gray-100/30 text-black'
                   }`}>
                   {ev.Type}
                 </span>
               </div>
-              <p className="text-sm text-[#6b7394] line-clamp-2 mb-3 leading-relaxed">{ev.Description}</p>
-              <div className="flex items-center justify-between text-xs text-[#3d4162]">
+              <p className="text-sm text-gray-500 line-clamp-2 mb-3 leading-relaxed">{ev.Description}</p>
+              <div className="flex items-center justify-between text-xs text-gray-400">
                 <span>{ev.organizer?.organizerName || 'Unknown'}</span>
                 <span>{new Date(ev.StartDate).toLocaleDateString()}</span>
               </div>
-              <div className="flex items-center justify-between text-xs text-[#3d4162] mt-1">
+              <div className="flex items-center justify-between text-xs text-gray-400 mt-1">
                 <span className="capitalize">{ev.eligibility}</span>
-                {ev.registrationFee > 0 && <span className="text-[#818cf8]">₹{ev.registrationFee}</span>}
-                {ev.registrationFee === 0 && <span className="text-[#34d399]">Free</span>}
+                {ev.registrationFee > 0 && <span className="text-black font-medium">₹{ev.registrationFee}</span>}
+                {ev.registrationFee === 0 && <span className="text-black">Free</span>}
               </div>
               {/* Participation status & team name */}
               {user && (myRegs[ev._id] || myTeams[ev._id]) && (
                 <div className="flex gap-2 mt-3 flex-wrap">
                   {myRegs[ev._id] === 'registered' && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#065f46]/30 text-[#34d399] font-medium">Registered</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-gray-100 text-black font-medium">Registered</span>
                   )}
                   {myRegs[ev._id] === 'cancelled' && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#7f1d1d]/30 text-[#f87171] font-medium">Cancelled</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-gray-100 text-black font-medium">Cancelled</span>
                   )}
                   {myTeams[ev._id] && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#312e81]/30 text-[#818cf8] font-medium">Team: {myTeams[ev._id]}</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-gray-100/30 text-black font-medium font-medium">Team: {myTeams[ev._id]}</span>
                   )}
                 </div>
               )}

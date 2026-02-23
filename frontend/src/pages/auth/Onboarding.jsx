@@ -45,19 +45,19 @@ export default function Onboarding() {
   const handleSkip = () => navigate('/dashboard');
 
   return (
-    <div className="min-h-screen bg-[#0c0e14] px-4 py-12">
+    <div className="min-h-screen bg-white px-4 py-12">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold text-white text-center mb-2">Welcome to Felicity!</h1>
-        <p className="text-[#6b7394] text-center mb-10">Personalize your experience</p>
+        <h1 className="text-3xl font-bold text-black text-center mb-2">Welcome to Felicity!</h1>
+        <p className="text-gray-500 text-center mb-10">Personalize your experience</p>
 
-        <div className="bg-[#12141d] rounded-2xl p-8 border border-[#1e2030] mb-6 shadow-2xl shadow-black/40">
-          <h2 className="text-base font-semibold text-white mb-4">Areas of Interest</h2>
+        <div className="bg-gray-50 rounded p-8 border border-gray-200 border mb-6 shadow shadow -200">
+          <h2 className="text-base font-semibold text-black mb-4">Areas of Interest</h2>
           <div className="flex flex-wrap gap-2">
             {INTERESTS.map((interest) => (
               <button key={interest} onClick={() => toggleInterest(interest)}
-                className={`px-4 py-2 rounded-full text-sm font-medium cursor-pointer transition-all ${selectedInterests.includes(interest)
-                    ? 'bg-[#6366f1] text-white shadow-lg shadow-[#6366f1]/20'
-                    : 'bg-[#0c0e14] text-[#6b7394] border border-[#1e2030] hover:border-[#3d4162]'
+                className={`px-4 py-2 rounded text-sm font-medium cursor-pointer  ${selectedInterests.includes(interest)
+                    ? 'bg-black text-white-important text-white shadow shadow -200'
+                    : 'bg-white text-gray-500 border border-gray-200 border hover:border-gray-300 border'
                   }`}>
                 {interest}
               </button>
@@ -66,17 +66,17 @@ export default function Onboarding() {
         </div>
 
         {loaded && allClubs.length > 0 && (
-          <div className="bg-[#12141d] rounded-2xl p-8 border border-[#1e2030] mb-6 shadow-2xl shadow-black/40">
-            <h2 className="text-base font-semibold text-white mb-4">Follow Clubs / Organizers</h2>
+          <div className="bg-gray-50 rounded p-8 border border-gray-200 border mb-6 shadow shadow -200">
+            <h2 className="text-base font-semibold text-black mb-4">Follow Clubs / Organizers</h2>
             <div className="space-y-3">
               {allClubs.map((club) => (
                 <button key={club._id} onClick={() => toggleClub(club._id)}
-                  className={`w-full text-left px-4 py-3 rounded-xl transition-all cursor-pointer ${clubs.includes(club._id)
-                      ? 'bg-[#1e1b4b]/30 border border-[#4f46e5]/40'
-                      : 'bg-[#0c0e14] border border-[#1e2030] hover:border-[#3d4162]'
+                  className={`w-full text-left px-4 py-3 rounded  cursor-pointer ${clubs.includes(club._id)
+                      ? 'bg-gray-100 border border-gray-300 border'
+                      : 'bg-white border border-gray-200 border hover:border-gray-300 border'
                     }`}>
-                  <p className="text-white font-medium text-sm text-left">{club.organizerName}</p>
-                  <p className="text-[#8b8fad] text-xs text-left mt-0.5">
+                  <p className="text-black font-medium text-sm text-left">{club.organizerName}</p>
+                  <p className="text-gray-600 text-xs text-left mt-0.5">
                     {Array.isArray(club.category) ? club.category.join(' • ') : club.category}
                   </p>
                 </button>
@@ -87,11 +87,11 @@ export default function Onboarding() {
 
         <div className="flex gap-4">
           <button onClick={handleSkip}
-            className="flex-1 py-3 bg-[#12141d] border border-[#1e2030] hover:border-[#3d4162] text-white font-medium rounded-xl cursor-pointer transition-all active:scale-[0.98]">
+            className="flex-1 py-3 bg-gray-50 border border-gray-200 border hover:border-gray-300 border text-black font-medium rounded cursor-pointer  ">
             Skip for now
           </button>
           <button onClick={handleSave}
-            className="flex-1 py-3 bg-[#6366f1] hover:bg-[#818cf8] text-white font-medium rounded-xl cursor-pointer transition-all active:scale-[0.98]">
+            className="flex-1 py-3 bg-black text-white-important hover:bg-gray-900 text-white font-medium rounded cursor-pointer  ">
             Save Preferences
           </button>
         </div>

@@ -105,9 +105,9 @@ export default function Teams() {
     };
 
     const statusColors = {
-        forming: 'bg-[#78350f]/30 text-[#fbbf24]',
-        complete: 'bg-[#065f46]/30 text-[#34d399]',
-        cancelled: 'bg-[#7f1d1d]/30 text-[#f87171]'
+        forming: 'bg-gray-100 text-black',
+        complete: 'bg-gray-100 text-black',
+        cancelled: 'bg-gray-100 text-black'
     };
 
     const statusLabels = {
@@ -116,19 +116,19 @@ export default function Teams() {
         cancelled: 'Cancelled'
     };
 
-    if (loading) return <div className="text-center text-[#6b7394] py-20">Loading...</div>;
+    if (loading) return <div className="text-center text-gray-500 py-20">Loading...</div>;
 
     return (
         <div className="max-w-4xl mx-auto px-4 py-8">
             <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold text-white">My Teams</h1>
+                <h1 className="text-2xl font-bold text-black">My Teams</h1>
                 <div className="flex gap-2">
                     <button onClick={() => setShowCreate(true)}
-                        className="px-4 py-2 bg-[#6366f1] hover:bg-[#818cf8] text-white text-sm rounded-lg cursor-pointer transition">
+                        className="px-4 py-2 bg-black text-white-important hover:bg-gray-900 text-white text-sm rounded cursor-pointer ">
                         Create Team
                     </button>
                     <button onClick={() => setShowJoin(true)}
-                        className="px-4 py-2 bg-[#0c0e14] border border-[#1e2030] hover:border-[#6366f1] text-white text-sm rounded-lg cursor-pointer transition">
+                        className="px-4 py-2 bg-white border border-gray-200 border hover:border-black text-black text-sm rounded cursor-pointer ">
                         Join Team
                     </button>
                 </div>
@@ -137,30 +137,30 @@ export default function Teams() {
             {/* Create Team Modal */}
             {showCreate && (
                 <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setShowCreate(false)}>
-                    <div className="bg-[#12141d] border border-[#1e2030] rounded-2xl p-6 w-full max-w-md" onClick={e => e.stopPropagation()}>
-                        <h2 className="text-lg font-semibold text-white mb-4">Create Team</h2>
+                    <div className="bg-gray-50 border border-gray-200 border rounded p-6 w-full max-w-md" onClick={e => e.stopPropagation()}>
+                        <h2 className="text-lg font-semibold text-black mb-4">Create Team</h2>
                         <form onSubmit={handleCreate} className="space-y-4">
                             <div>
-                                <label className="block text-sm text-[#6b7394] mb-1">Event</label>
+                                <label className="block text-sm text-gray-500 mb-1">Event</label>
                                 <select required value={form.eventId} onChange={e => setForm({ ...form, eventId: e.target.value })}
-                                    className="w-full px-4 py-2.5 bg-[#0c0e14] border border-[#1e2030] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#6366f1]">
+                                    className="w-full px-4 py-2.5 bg-white border border-gray-200 border rounded text-black focus:outline-none focus:ring-2 focus:ring-[#6366f1]">
                                     <option value="">Select a team event...</option>
                                     {events.map(ev => <option key={ev._id} value={ev._id}>{ev.Name} ({ev.minTeamSize}–{ev.maxTeamSize} members)</option>)}
                                 </select>
-                                {events.length === 0 && <p className="text-xs text-[#3d4162] mt-1">No team-based events available.</p>}
+                                {events.length === 0 && <p className="text-xs text-gray-400 mt-1">No team-based events available.</p>}
                             </div>
                             <div>
-                                <label className="block text-sm text-[#6b7394] mb-1">Team Name</label>
+                                <label className="block text-sm text-gray-500 mb-1">Team Name</label>
                                 <input type="text" required value={form.teamName} onChange={e => setForm({ ...form, teamName: e.target.value })}
                                     placeholder="Enter team name..."
-                                    className="w-full px-4 py-2.5 bg-[#0c0e14] border border-[#1e2030] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#6366f1]" />
+                                    className="w-full px-4 py-2.5 bg-white border border-gray-200 border rounded text-black focus:outline-none focus:ring-2 focus:ring-[#6366f1]" />
                             </div>
                             {form.eventId && (
-                                <p className="text-xs text-[#6b7394]">Team size: {events.find(e => e._id === form.eventId)?.minTeamSize || 2} – {events.find(e => e._id === form.eventId)?.maxTeamSize || 4} members (set by the organizer)</p>
+                                <p className="text-xs text-gray-500">Team size: {events.find(e => e._id === form.eventId)?.minTeamSize || 2} – {events.find(e => e._id === form.eventId)?.maxTeamSize || 4} members (set by the organizer)</p>
                             )}
                             <div className="flex gap-2">
-                                <button type="submit" className="flex-1 py-2.5 bg-[#6366f1] hover:bg-[#818cf8] text-white rounded-lg cursor-pointer transition">Create</button>
-                                <button type="button" onClick={() => setShowCreate(false)} className="flex-1 py-2.5 bg-[#1e2030] hover:bg-[#252839] text-[#8b8fad] rounded-lg cursor-pointer transition">Cancel</button>
+                                <button type="submit" className="flex-1 py-2.5 bg-black text-white-important hover:bg-gray-900 text-white rounded cursor-pointer ">Create</button>
+                                <button type="button" onClick={() => setShowCreate(false)} className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-300 text-gray-600 rounded cursor-pointer ">Cancel</button>
                             </div>
                         </form>
                     </div>
@@ -170,17 +170,17 @@ export default function Teams() {
             {/* Join Team Modal */}
             {showJoin && (
                 <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={() => setShowJoin(false)}>
-                    <div className="bg-[#12141d] border border-[#1e2030] rounded-2xl p-6 w-full max-w-md" onClick={e => e.stopPropagation()}>
-                        <h2 className="text-lg font-semibold text-white mb-4">Join Team</h2>
+                    <div className="bg-gray-50 border border-gray-200 border rounded p-6 w-full max-w-md" onClick={e => e.stopPropagation()}>
+                        <h2 className="text-lg font-semibold text-black mb-4">Join Team</h2>
                         <form onSubmit={handleJoin} className="space-y-4">
                             <div>
-                                <label className="block text-sm text-[#6b7394] mb-1">Invite Code</label>
+                                <label className="block text-sm text-gray-500 mb-1">Invite Code</label>
                                 <input type="text" required value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())} placeholder="Enter invite code"
-                                    className="w-full px-4 py-2.5 bg-[#0c0e14] border border-[#1e2030] rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-[#6366f1] uppercase tracking-widest text-center text-lg font-mono" />
+                                    className="w-full px-4 py-2.5 bg-white border border-gray-200 border rounded text-black focus:outline-none focus:ring-2 focus:ring-[#6366f1]  tracking-widest text-center text-lg font-mono" />
                             </div>
                             <div className="flex gap-2">
-                                <button type="submit" className="flex-1 py-2.5 bg-[#6366f1] hover:bg-[#818cf8] text-white rounded-lg cursor-pointer transition">Join</button>
-                                <button type="button" onClick={() => setShowJoin(false)} className="flex-1 py-2.5 bg-[#1e2030] hover:bg-[#252839] text-[#8b8fad] rounded-lg cursor-pointer transition">Cancel</button>
+                                <button type="submit" className="flex-1 py-2.5 bg-black text-white-important hover:bg-gray-900 text-white rounded cursor-pointer ">Join</button>
+                                <button type="button" onClick={() => setShowJoin(false)} className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-300 text-gray-600 rounded cursor-pointer ">Cancel</button>
                             </div>
                         </form>
                     </div>
@@ -189,7 +189,7 @@ export default function Teams() {
 
             {/* Team List */}
             {teams.length === 0 ? (
-                <div className="text-center text-[#3d4162] py-12 bg-[#12141d] border border-[#1e2030] rounded-2xl">
+                <div className="text-center text-gray-400 py-12 bg-gray-50 border border-gray-200 border rounded">
                     No teams yet. Create or join a team for team events.
                 </div>
             ) : (
@@ -200,39 +200,39 @@ export default function Teams() {
                         const canRegister = isLeader && team.status === 'forming' && team.members.length >= minSize;
 
                         return (
-                            <div key={team._id} className="bg-[#12141d] border border-[#1e2030] rounded-2xl p-6">
+                            <div key={team._id} className="bg-gray-50 border border-gray-200 border rounded p-6">
                                 <div className="flex items-start justify-between mb-3">
                                     <div>
-                                        <h3 className="text-white font-semibold text-lg">{team.name}</h3>
-                                        <p className="text-[#6b7394] text-sm">{team.event?.Name || 'Unknown Event'}</p>
+                                        <h3 className="text-black font-semibold text-lg">{team.name}</h3>
+                                        <p className="text-gray-500 text-sm">{team.event?.Name || 'Unknown Event'}</p>
                                     </div>
-                                    <span className={`text-xs px-3 py-1 rounded-full font-medium ${statusColors[team.status]}`}>
+                                    <span className={`text-xs px-3 py-1 rounded font-medium ${statusColors[team.status]}`}>
                                         {statusLabels[team.status] || team.status}
                                     </span>
                                 </div>
 
                                 {/* Invite Code */}
                                 {team.status === 'forming' && (
-                                    <div className="bg-[#0c0e14] border border-[#1e2030] rounded-lg p-3 mb-3">
-                                        <p className="text-[10px] text-[#6b7394] uppercase tracking-wider mb-1">Invite Code (share with teammates)</p>
+                                    <div className="bg-white border border-gray-200 border rounded p-3 mb-3">
+                                        <p className="text-[10px] text-gray-500   mb-1">Invite Code (share with teammates)</p>
                                         <div className="flex items-center gap-2">
-                                            <code className="text-[#818cf8] font-mono text-lg font-bold tracking-widest">{team.inviteCode}</code>
+                                            <code className="text-black font-medium font-mono text-lg font-bold tracking-widest">{team.inviteCode}</code>
                                             <button onClick={() => { navigator.clipboard.writeText(team.inviteCode); toast.success('Copied!'); }}
-                                                className="text-xs text-[#6b7394] hover:text-white cursor-pointer transition">Copy</button>
+                                                className="text-xs text-gray-500 hover:text-black cursor-pointer ">Copy</button>
                                         </div>
                                     </div>
                                 )}
 
                                 {/* Members */}
                                 <div className="mb-4">
-                                    <p className="text-[10px] text-[#6b7394] uppercase tracking-wider mb-2">
+                                    <p className="text-[10px] text-gray-500   mb-2">
                                         Members ({team.members.length}/{team.maxSize}) — Min: {minSize}
                                     </p>
                                     <div className="space-y-1">
                                         {team.members.map(m => (
-                                            <div key={m._id} className="flex items-center justify-between text-sm py-1.5 px-3 bg-[#0c0e14] rounded-lg">
-                                                <span className="text-white">{m.firstName} {m.lastName}</span>
-                                                <span className="text-[10px] text-[#3d4162]">
+                                            <div key={m._id} className="flex items-center justify-between text-sm py-1.5 px-3 bg-white rounded">
+                                                <span className="text-black">{m.firstName} {m.lastName}</span>
+                                                <span className="text-[10px] text-gray-400">
                                                     {m._id === team.leader?._id ? 'Leader' : 'Member'}
                                                 </span>
                                             </div>
@@ -248,20 +248,20 @@ export default function Teams() {
                                                 <button
                                                     onClick={() => handleRegisterTeam(team)}
                                                     disabled={!canRegister || registeringTeamId === team._id}
-                                                    className="flex-1 py-2.5 bg-[#6366f1] hover:bg-[#818cf8] disabled:opacity-40 text-white font-medium rounded-xl cursor-pointer transition-all text-sm"
+                                                    className="flex-1 py-2.5 bg-black text-white-important hover:bg-gray-900 disabled:opacity-40 text-white font-medium rounded cursor-pointer  text-sm"
                                                 >
                                                     {registeringTeamId === team._id
                                                         ? 'Registering...'
                                                         : `Register Team (${team.members.length}/${minSize} min)`}
                                                 </button>
                                                 <button onClick={() => handleCancel(team._id)}
-                                                    className="px-4 py-2.5 bg-[#7f1d1d]/30 hover:bg-[#7f1d1d]/50 text-[#f87171] font-medium rounded-xl cursor-pointer transition-all text-sm">
+                                                    className="px-4 py-2.5 bg-gray-100 hover:bg-gray-400 text-black font-medium rounded cursor-pointer  text-sm">
                                                     Cancel
                                                 </button>
                                             </>
                                         ) : (
                                             <button onClick={() => handleLeave(team._id)}
-                                                className="px-4 py-2.5 bg-[#7f1d1d]/20 hover:bg-[#7f1d1d]/40 text-[#f87171] text-sm rounded-xl cursor-pointer transition-all">
+                                                className="px-4 py-2.5 bg-gray-100/20 hover:bg-gray-300/40 text-black text-sm rounded cursor-pointer ">
                                                 Leave Team
                                             </button>
                                         )}
@@ -270,10 +270,10 @@ export default function Teams() {
 
                                 {/* Registered confirmation */}
                                 {team.status === 'complete' && (
-                                    <div className="bg-[#065f46]/10 border border-[#065f46]/30 rounded-lg p-3 text-center">
-                                        <p className="text-[#34d399] text-sm font-medium">Team registered successfully</p>
-                                        {isLeader && <p className="text-[10px] text-[#6b7394] mt-1">QR code was sent to your email</p>}
-                                        {!isLeader && <p className="text-[10px] text-[#6b7394] mt-1">Your team leader has the QR code for entry</p>}
+                                    <div className="bg-gray-100/10 border border-gray-300 rounded p-3 text-center">
+                                        <p className="text-black text-sm font-medium">Team registered successfully</p>
+                                        {isLeader && <p className="text-[10px] text-gray-500 mt-1">QR code was sent to your email</p>}
+                                        {!isLeader && <p className="text-[10px] text-gray-500 mt-1">Your team leader has the QR code for entry</p>}
                                     </div>
                                 )}
                             </div>

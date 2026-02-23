@@ -28,7 +28,7 @@
 
 ---
 
-## 🔥 Advanced Features Implemented
+## Advanced Features Implemented
 
 ### Tier A (Core Advanced Features)
 **1. Hackathon Team Registration**
