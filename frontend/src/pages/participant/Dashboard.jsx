@@ -17,6 +17,7 @@ export default function ParticipantDashboard() {
   const [loading, setLoading] = useState(true);
   const [qrCode, setQrCode] = useState(null);
   const [showQrModal, setShowQrModal] = useState(false);
+  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
     setLoading(true);
@@ -25,6 +26,12 @@ export default function ParticipantDashboard() {
       .catch(() => toast.error('Failed to load registrations'))
       .finally(() => setLoading(false));
   }, [tab]);
+
+  useEffect(() => {
+    API.get('/notifications')
+      .then(res => setNotifications(res.data))
+      .catch(err => console.error("Failed to load notifications", err));
+  }, []);
 
   const cancelRegistration = async (regId) => {
     if (!confirm('Cancel this registration?')) return;
@@ -46,8 +53,38 @@ export default function ParticipantDashboard() {
     }
   };
 
+  const markAsRead = async (id) => {
+    try {
+      await API.patch(`/notifications/${id}/read`);
+      setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
+    } catch (err) {
+      toast.error('Failed to mark as read');
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+      {notifications.filter(n => !n.isRead).length > 0 && (
+        <div className="mb-8">
+          <h2 className="text-xl font-bold text-black mb-4">Notifications</h2>
+          <div className="space-y-3">
+            {notifications.filter(n => !n.isRead).map(n => (
+              <div key={n._id} className="bg-white border border-yellow-400 rounded p-4 flex items-start justify-between gap-4 shadow-sm">
+                <div>
+                  <h3 className="font-semibold text-black text-sm">{n.title}</h3>
+                  <p className="text-sm text-gray-700 mt-1 whitespace-pre-wrap">{n.content}</p>
+                  {n.link && <Link to={n.link} className="text-xs text-blue-600 hover:text-blue-800 hover:underline mt-2 inline-block font-medium">View Forum</Link>}
+                </div>
+                <button onClick={() => markAsRead(n._id)}
+                  className="text-xs text-gray-600 border border-gray-300 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded cursor-pointer whitespace-nowrap font-medium">
+                  Mark as Read
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <h1 className="text-2xl font-bold text-black mb-6">My Events</h1>
 
       <div className="flex gap-1.5 mb-6 overflow-x-auto pb-2">

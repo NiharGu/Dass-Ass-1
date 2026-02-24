@@ -169,6 +169,7 @@ export default function EventDetails() {
             <p className="text-black font-medium text-sm">You are registered</p>
             <div className="flex flex-wrap gap-4 mt-2 text-xs text-gray-600">
               <span>Status: <span className="text-black capitalize">{myRegistration.status}</span></span>
+              <span>Attendance: <span className={`font-medium ${myRegistration.attended ? 'text-green-600' : 'text-gray-500'}`}>{myRegistration.attended ? 'Present' : 'Absent'}</span></span>
               {myRegistration.teamName && <span>Team: <span className="text-black font-medium">{myRegistration.teamName}</span></span>}
               <span>Ticket: <span className="font-mono text-black font-medium">{myRegistration.ticketId}</span></span>
             </div>

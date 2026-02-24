@@ -95,29 +95,29 @@ export default function EditEvent() {
         <p className="text-black text-sm mb-4">Published events: only Description, Registration Deadline, Registration Limit, and Dates can be edited.</p>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-gray-900 border border-gray-800 rounded p-6 space-y-4">
+      <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded p-6 space-y-5">
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Event Name</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Event Name</label>
           <input type="text" value={form.Name} onChange={set('Name')} disabled={!isDraft}
-            className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded text-black disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded text-black disabled:bg-gray-50 disabled:text-gray-400 focus:outline-none focus:border-black" />
         </div>
 
         <div>
-          <label className="block text-sm text-gray-400 mb-1">Description</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
           <textarea value={form.Description} onChange={set('Description')} rows={4}
-            className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded text-black focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded text-black focus:outline-none focus:border-black" />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Type</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
             <input type="text" value={form.Type} disabled
-              className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded text-black opacity-50" />
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded text-gray-500 cursor-not-allowed" />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Eligibility</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Eligibility</label>
             <select value={form.eligibility} onChange={set('eligibility')} disabled={!isDraft}
-              className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded text-black disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded text-black disabled:bg-gray-50 disabled:text-gray-400 focus:outline-none focus:border-black">
               <option value="open">Open</option>
               <option value="iiit-only">IIIT Only</option>
               <option value="non-iiit">Non-IIIT</option>
@@ -125,44 +125,44 @@ export default function EditEvent() {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Start Date</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
             <input type="date" value={form.StartDate} onChange={set('StartDate')}
-              className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded text-black focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded text-black focus:outline-none focus:border-black" />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">End Date</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
             <input type="date" value={form.EndDate} onChange={set('EndDate')}
-              className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded text-black focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded text-black focus:outline-none focus:border-black" />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Registration Deadline</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Registration Deadline</label>
             <input type="date" value={form.registrationDeadline} onChange={set('registrationDeadline')}
-              className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded text-black focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded text-black focus:outline-none focus:border-black" />
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Registration Limit</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Registration Limit</label>
             <input type="number" min={1} value={form.registrationLimit} onChange={set('registrationLimit')}
-              className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded text-black focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded text-black focus:outline-none focus:border-black" />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Fee (₹)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Fee (₹)</label>
             <input type="number" min={0} value={form.registrationFee} onChange={set('registrationFee')} disabled={!isDraft}
-              className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded text-black disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded text-black disabled:bg-gray-50 disabled:text-gray-400 focus:outline-none focus:border-black" />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Tags</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
             <input type="text" value={form.Tags} onChange={set('Tags')} disabled={!isDraft}
-              className="w-full px-4 py-2.5 bg-gray-800 border border-gray-700 rounded text-black disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded text-black disabled:bg-gray-50 disabled:text-gray-400 focus:outline-none focus:border-black" />
           </div>
         </div>
 
         <button type="submit" disabled={saving}
-          className="w-full py-3 bg-gray-200 hover:bg-gray-400 disabled:opacity-50 text-black font-medium rounded cursor-pointer ">
+          className="w-full py-3 bg-black hover:bg-gray-900 disabled:opacity-50 text-white-important text-white font-medium rounded cursor-pointer mt-4">
           {saving ? 'Saving...' : 'Save Changes'}
         </button>
       </form>

@@ -36,9 +36,9 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         {cards.map((c, i) => (
-          <div key={i} className="bg-gray-900 border border-gray-800 rounded p-6 text-center">
+          <div key={i} className="bg-white border border-gray-200 rounded p-6 text-center">
             <p className="text-3xl font-bold text-black">{c.value}</p>
-            <p className="text-sm text-gray-400 mt-1">{c.label}</p>
+            <p className="text-sm text-gray-500 mt-1">{c.label}</p>
           </div>
         ))}
       </div>

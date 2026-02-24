@@ -72,7 +72,8 @@ exports.register = async (req, res) => {
                 lastName: user.lastName,
                 email: user.email,
                 role: user.role,
-                participantType: user.participantType
+                participantType: user.participantType,
+                followedClubs: []
             }
         });
     } catch (error) {
@@ -125,7 +126,8 @@ exports.login = async (req, res) => {
                 firstName: user.firstName,
                 lastName: user.lastName,
                 organizerName: user.organizerName,
-                isApproved: user.isApproved
+                isApproved: user.isApproved,
+                followedClubs: user.followedClubs || []
             }
         });
     } catch (error) {

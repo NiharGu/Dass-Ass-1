@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import io from 'socket.io-client';
 
-const EMOJIS = ['�', '❤️', '�', '🎉', '🤔', '�'];
+const EMOJIS = ['👍', '❤️', '😂', '🎉', '🤔', '👀'];
 
 // Derive backend socket URL from the API URL or fallback
 const getSocketUrl = () => {
@@ -18,6 +18,7 @@ export default function DiscussionForum({ eventId, isOrganizer, onNewMessage }) 
     const [newMsg, setNewMsg] = useState('');
     const [replyTo, setReplyTo] = useState(null);
     const [isAnnouncement, setIsAnnouncement] = useState(false);
+    const [isSending, setIsSending] = useState(false);
     const { user } = useAuth();
     const messagesEndRef = useRef(null);
     const socketRef = useRef(null);
@@ -75,7 +76,8 @@ export default function DiscussionForum({ eventId, isOrganizer, onNewMessage }) 
 
     const handleSend = async (e) => {
         e.preventDefault();
-        if (!newMsg.trim()) return;
+        if (!newMsg.trim() || isSending) return;
+        setIsSending(true);
         try {
             const res = await API.post(`/forum/${eventId}/messages`, {
                 content: newMsg,
@@ -93,6 +95,8 @@ export default function DiscussionForum({ eventId, isOrganizer, onNewMessage }) 
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to send');
             fetchMessages();
+        } finally {
+            setIsSending(false);
         }
     };
 
@@ -104,13 +108,19 @@ export default function DiscussionForum({ eventId, isOrganizer, onNewMessage }) 
 
     const handlePin = async (msgId) => {
         try {
-            await API.patch(`/forum/${eventId}/messages/${msgId}/pin`);
+            const res = await API.patch(`/forum/${eventId}/messages/${msgId}/pin`);
+            if (res.data) {
+                setMessages(prev => prev.map(m => m._id === msgId ? { ...m, isPinned: res.data.isPinned } : m));
+            }
         } catch (err) { toast.error('Failed to pin'); }
     };
 
     const handleReact = async (msgId, emoji) => {
         try {
-            await API.post(`/forum/${eventId}/messages/${msgId}/react`, { emoji });
+            const res = await API.post(`/forum/${eventId}/messages/${msgId}/react`, { emoji });
+            if (res.data && res.data.reactions) {
+                setMessages(prev => prev.map(m => m._id === msgId ? { ...m, reactions: res.data.reactions } : m));
+            }
         } catch { }
     };
 
@@ -122,7 +132,7 @@ export default function DiscussionForum({ eventId, isOrganizer, onNewMessage }) 
 
     // Split into pinned and regular messages
     const pinnedMessages = messages.filter(m => m.isPinned);
-    const regularMessages = messages.filter(m => !m.isPinned);
+    const regularMessages = messages;
 
     // Group replies under parent
     const topLevel = regularMessages.filter(m => !m.parentMessage);
@@ -196,13 +206,13 @@ export default function DiscussionForum({ eventId, isOrganizer, onNewMessage }) 
                         placeholder="Type a message..."
                         className="flex-1 px-3 py-2 bg-white border border-gray-200 border rounded text-black text-sm focus:outline-none focus:border-black" />
                     {isOrganizer && (
-                        <label className="flex items-center gap-1 text-xs text-gray-400 cursor-pointer select-none">
-                            <input type="checkbox" checked={isAnnouncement} onChange={e => setIsAnnouncement(e.target.checked)} />
-                            
+                        <label className="flex items-center gap-1.5 px-2 py-1.5 bg-gray-100 border border-gray-200 rounded text-xs text-black font-medium cursor-pointer select-none hover:bg-gray-200 transition-colors">
+                            <input type="checkbox" checked={isAnnouncement} onChange={e => setIsAnnouncement(e.target.checked)} className="accent-black cursor-pointer" />
+                            Announce
                         </label>
                     )}
-                    <button type="submit" className="px-4 py-2 bg-black text-white-important hover:bg-gray-900 text-white text-sm rounded cursor-pointer ">
-                        Send
+                    <button type="submit" disabled={isSending} className="px-4 py-2 bg-black text-white-important hover:bg-gray-900 text-white text-sm rounded cursor-pointer disabled:opacity-50">
+                        {isSending ? '...' : 'Send'}
                     </button>
                 </form>
             </div>
@@ -244,7 +254,7 @@ function MessageBubble({ msg, isOrganizer, isMine, onDelete, onPin, onReact, onR
                 <div className="  flex items-center gap-1 ">
                     <button onClick={() => setShowReactions(!showReactions)} className="text-gray-500 hover:text-black text-xs cursor-pointer">React</button>
                     {!isReply && <button onClick={() => onReply()} className="text-gray-500 hover:text-black text-xs cursor-pointer">Reply</button>}
-                    {isOrganizer && <button onClick={() => onPin(msg._id)} className="text-gray-500 hover:text-black text-xs cursor-pointer">Pin</button>}
+                    {isOrganizer && <button onClick={() => onPin(msg._id)} className="text-gray-500 hover:text-black text-xs cursor-pointer">{msg.isPinned ? 'Unpin' : 'Pin'}</button>}
                     {isOrganizer && <button onClick={() => onDelete(msg._id)} className="text-gray-500 hover:text-black text-xs cursor-pointer">Delete</button>}
                 </div>
             </div>

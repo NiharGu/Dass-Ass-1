@@ -20,7 +20,7 @@ export default function OrganizerProfile() {
       setProfile(res.data);
       setForm({
         organizerName: res.data.organizerName || '',
-        category: res.data.category || '',
+        category: res.data.category || [],
         description: res.data.description || '',
         contact: res.data.contact || '',
         discordWebhookUrl: res.data.discordWebhookUrl || '',
@@ -36,7 +36,13 @@ export default function OrganizerProfile() {
     e.preventDefault();
     setSaving(true);
     try {
-      const res = await API.patch('/profile', form);
+      // Ensure category is an array of trimmed strings if it was ever typed as a comma string
+      let categoryArray = form.category;
+      if (typeof form.category === 'string') {
+        categoryArray = form.category.split(',').map(c => c.trim()).filter(Boolean);
+      }
+
+      const res = await API.patch('/profile', { ...form, category: categoryArray });
       setProfile(res.data.user);
       updateUser(res.data.user);
       toast.success('Profile updated');
@@ -44,6 +50,20 @@ export default function OrganizerProfile() {
       toast.error(err.response?.data?.message || 'Update failed');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const CATEGORY_OPTIONS = ['Sports', 'Cultural', 'Technical', 'Music', 'Dance', 'Drama', 'Art', 'Literature', 'Social', 'Other'];
+
+  const toggleCategory = (cat) => {
+    let current = form.category;
+    if (typeof current === 'string') current = current.split(',').map(c => c.trim()).filter(Boolean);
+    if (!Array.isArray(current)) current = [];
+
+    if (current.includes(cat)) {
+      setForm({ ...form, category: current.filter(c => c !== cat) });
+    } else {
+      setForm({ ...form, category: [...current, cat] });
     }
   };
 
@@ -94,9 +114,24 @@ export default function OrganizerProfile() {
         </div>
 
         <div>
-          <label className={labelClass}>Category</label>
-          <input type="text" value={Array.isArray(form.category) ? form.category.join(', ') : form.category}
-            onChange={(e) => setForm({ ...form, category: e.target.value })} className={inputClass} />
+          <label className={labelClass}>Categories</label>
+          <div className="flex flex-wrap gap-2 mt-1">
+            {CATEGORY_OPTIONS.map(cat => {
+              const isSelected = Array.isArray(form.category)
+                ? form.category.includes(cat)
+                : typeof form.category === 'string' && form.category.includes(cat);
+
+              return (
+                <button key={cat} type="button" onClick={() => toggleCategory(cat)}
+                  className={`px-3 py-1.5 rounded text-sm cursor-pointer  ${isSelected
+                    ? 'bg-black text-white-important text-white shadow shadow -200'
+                    : 'bg-white text-gray-500 border border-gray-200 border hover:border-gray-300 border'
+                    }`}>
+                  {cat}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <div>

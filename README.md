@@ -48,19 +48,22 @@
   - Implemented CSV export functionality directly from the MongoDB cursor for post-event reporting.
 
 ### Tier B (Real-time & Communication Features)
-**1. Real-Time Discussion Forum**
-- **Justification / Selection Reason:** Participants frequently need a localized place to clarify doubts directly with organizers and interact with peers without leaving the platform.
-- **Explanation of Design & Approach:** Integrated Socket.io namespaces and segregated communication into isolated "rooms", specifically mapped to each `eventId`. 
+**1. Real-Time Discussion Forum & Announcements**
+- **Justification / Selection Reason:** Participants frequently need a localized place to clarify doubts directly with organizers and interact with peers without leaving the platform. When organizers make critical announcements, participants need to be notified promptly without cluttering email inboxes or relying solely on active forum monitoring.
+- **Explanation of Design & Approach:** Integrated Socket.io namespaces and segregated communication into isolated "rooms", specifically mapped to each `eventId`. Built a dedicated `Notification` model and REST endpoints. When an organizer marks a forum post as an 'Announcement', the backend dynamically generates individual in-app notification records for all registered participants.
 - **Technical Decisions:** 
   - Decided to strongly restrict forum access—only explicitly registered participants and the event organizer can emit or listen to the socket namespace for that specific event.
   - Granted organizers administrative privileges (like deleting inappropriate messages) via socket broadcasts. 
   - Engineered an atomic unread message badge notification counter logic tied to user sessions.
+  - Notifications are pinned centrally on the Participant Dashboard, allowing users to consume and distinctly "Mark as Read."
+  - Database queries are specifically optimized to filter and fetch only unread notifications, minimizing unnecessary data transfer over the network.
 
 **2. Organizer Password Reset Workflow**
 - **Justification / Selection Reason:** Event organizers frequently lose access. However, automatically granting arbitrary access resets poses a severe security risk, necessitating Admin oversight.
 - **Explanation of Design & Approach:** Built a distinct `PasswordResetRequest` collection. Organizers submit requests -> Admins review a dedicated dashboard panel -> Admin Approves/Rejects the request.
 - **Technical Decisions:** 
   - Decoupled the reset implementation: Upon Admin approval, instead of sending a link, a secure temporary alphanumeric password is automatically generated, hashed via bcrypt, updated in the DB, and sent directly to the organizer's email using Nodemailer.
+
 
 ### Tier C (Integration & Enhancement Features)
 **1. Bot Protection (reCAPTCHA v3)**

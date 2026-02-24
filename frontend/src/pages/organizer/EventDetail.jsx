@@ -97,13 +97,13 @@ export default function OrganizerEventDetail() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       {/* Header */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
         <div>
           <button onClick={() => navigate('/organizer')} className="text-sm text-black font-semibold hover:underline mb-2 cursor-pointer">← Back</button>
           <h1 className="text-2xl font-bold text-black">{event.Name}</h1>
           <span className={`text-xs px-2 py-0.5 rounded ${statusColors[event.status]}`}>{event.status}</span>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {event.status === 'draft' && (
             <>
               <button onClick={handlePublish} className="px-4 py-2 bg-white border border-black cursor-pointer hover:bg-gray-300 text-black rounded text-sm cursor-pointer ">Publish</button>
@@ -124,7 +124,7 @@ export default function OrganizerEventDetail() {
           )}
           {event.status === 'published' && (
             <>
-              <button onClick={() => navigate(`/organizer/events/${id}/attendance`)} className="px-4 py-2 bg-gray-200 hover:bg-gray-400 text-black rounded text-sm cursor-pointer ">� Attendance</button>
+              <button onClick={() => navigate(`/organizer/events/${id}/attendance`)} className="px-4 py-2 bg-gray-200 hover:bg-gray-400 text-black rounded text-sm cursor-pointer ">Scan Attendance</button>
               <button onClick={handleClose} className="px-4 py-2 bg-white border border-gray-400 cursor-pointer hover:bg-gray-300 text-black rounded text-sm cursor-pointer ">Close</button>
             </>
           )}
@@ -135,7 +135,7 @@ export default function OrganizerEventDetail() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-gray-900 rounded p-1 mb-6">
+      <div className="flex flex-wrap gap-1 bg-gray-100 rounded p-1 mb-6">
         {['overview', 'participants', 'analytics', 'forum'].map(t => (
           <button key={t} onClick={() => setTab(t)}
             className={`flex-1 py-2 rounded text-sm font-medium cursor-pointer  ${tab === t ? 'bg-gray-200 text-black' : 'text-gray-400 hover:text-black'}`}>
@@ -146,7 +146,7 @@ export default function OrganizerEventDetail() {
 
       {/* Overview */}
       {tab === 'overview' && (
-        <div className="bg-gray-900 border border-gray-800 rounded p-6 space-y-4">
+        <div className="bg-white border border-gray-200 rounded p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div><span className="text-gray-400">Type:</span> <span className="text-black ml-2">{event.Type}</span></div>
             <div><span className="text-gray-400">Eligibility:</span> <span className="text-black ml-2">{event.eligibility}</span></div>
@@ -166,8 +166,8 @@ export default function OrganizerEventDetail() {
               <h3 className="text-gray-400 text-sm mb-2">Custom Form Fields</h3>
               <div className="space-y-1">
                 {event.customForm.map((f, i) => (
-                  <div key={i} className="text-sm text-gray-300 bg-gray-800 px-3 py-2 rounded">
-                    <span className="font-medium">{f.label || f.name}</span> — {f.type} {f.required && <span className="text-black">*</span>}
+                  <div key={i} className="text-sm text-gray-700 bg-gray-50 border border-gray-200 px-3 py-2 rounded">
+                    <span className="font-medium text-black">{f.label || f.name}</span> — {f.type} {f.required && <span className="text-red-500">*</span>}
                     {f.options?.length > 0 && <span className="text-gray-500 ml-2">({f.options.join(', ')})</span>}
                   </div>
                 ))}
@@ -179,9 +179,9 @@ export default function OrganizerEventDetail() {
               <h3 className="text-gray-400 text-sm mb-2">Merchandise Items</h3>
               <div className="grid gap-2">
                 {event.merchandiseDetails.items.map((item, i) => (
-                  <div key={i} className="text-sm text-gray-300 bg-gray-800 px-3 py-2 rounded flex justify-between">
-                    <span>{item.name} {item.size && `• ${item.size}`} {item.color && `• ${item.color}`}</span>
-                    <span>Stock: {item.stock} | Limit: {item.purchaseLimit}</span>
+                  <div key={i} className="text-sm text-gray-700 bg-gray-50 border border-gray-200 px-3 py-2 rounded flex flex-col sm:flex-row sm:justify-between gap-1 sm:items-center">
+                    <span className="font-medium text-black">{item.name} {item.size && `• ${item.size}`} {item.color && `• ${item.color}`}</span>
+                    <span className="text-gray-500">Stock: {item.stock} | Limit: {item.purchaseLimit}</span>
                   </div>
                 ))}
               </div>
@@ -193,11 +193,11 @@ export default function OrganizerEventDetail() {
       {/* Participants */}
       {tab === 'participants' && (
         <div className="space-y-4">
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <input type="text" placeholder="Search by name, email, ticket..." value={search} onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 px-4 py-2.5 bg-gray-800 border border-gray-700 rounded text-black text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              className="flex-1 px-4 py-2.5 bg-white border border-gray-200 rounded text-black text-sm focus:outline-none focus:border-black" />
             <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2.5 bg-gray-800 border border-gray-700 rounded text-black text-sm focus:outline-none">
+              className="px-4 py-2.5 bg-white border border-gray-200 rounded text-black text-sm focus:outline-none focus:border-black">
               <option value="">All Statuses</option>
               <option value="registered">Registered</option>
               <option value="cancelled">Cancelled</option>
@@ -207,31 +207,31 @@ export default function OrganizerEventDetail() {
             </button>
           </div>
 
-          <div className="bg-gray-900 border border-gray-800 rounded overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="bg-white border border-gray-200 rounded overflow-x-auto">
+            <table className="w-full text-sm min-w-[700px]">
               <thead>
-                <tr className="border-b border-gray-800 text-gray-400 text-left">
-                  <th className="px-4 py-3">Name</th>
-                  <th className="px-4 py-3">Email</th>
-                  <th className="px-4 py-3">Reg Date</th>
-                  <th className="px-4 py-3">Payment</th>
-                  <th className="px-4 py-3">Team</th>
-                  <th className="px-4 py-3">Attendance</th>
-                  <th className="px-4 py-3">Status</th>
+                <tr className="border-b border-gray-200 text-gray-500 text-left bg-gray-50">
+                  <th className="px-4 py-3 font-medium whitespace-nowrap">Name</th>
+                  <th className="px-4 py-3 font-medium whitespace-nowrap">Email</th>
+                  <th className="px-4 py-3 font-medium whitespace-nowrap">Reg Date</th>
+                  <th className="px-4 py-3 font-medium whitespace-nowrap">Payment</th>
+                  <th className="px-4 py-3 font-medium whitespace-nowrap">Team</th>
+                  <th className="px-4 py-3 font-medium whitespace-nowrap">Attendance</th>
+                  <th className="px-4 py-3 font-medium whitespace-nowrap">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredParticipants.length === 0 ? (
                   <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-500">No participants found</td></tr>
                 ) : filteredParticipants.map(p => (
-                  <tr key={p.registrationId} className="border-b border-gray-800 hover:bg-gray-900/50">
-                    <td className="px-4 py-3 text-black">{p.participantName}</td>
-                    <td className="px-4 py-3 text-gray-300">{p.participantEmail}</td>
-                    <td className="px-4 py-3 text-gray-400 text-xs">{new Date(p.registrationDate).toLocaleDateString()}</td>
+                  <tr key={p.registrationId} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="px-4 py-3 text-black whitespace-nowrap">{p.participantName}</td>
+                    <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{p.participantEmail}</td>
+                    <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">{new Date(p.registrationDate).toLocaleDateString()}</td>
                     <td className="px-4 py-3 text-black text-sm">₹{p.payment || 0}</td>
                     <td className="px-4 py-3 text-black font-medium text-sm">{p.teamName || '—'}</td>
                     <td className="px-4 py-3">
-                      <span className={`text-xs px-2 py-0.5 rounded ${p.attended ? 'bg-gray-200 text-black' : 'bg-gray-800 text-gray-500'}`}>
+                      <span className={`text-xs px-2 py-0.5 rounded whitespace-nowrap ${p.attended ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
                         {p.attended ? 'Present' : 'Absent'}
                       </span>
                     </td>
@@ -250,40 +250,40 @@ export default function OrganizerEventDetail() {
 
       {/* Analytics */}
       {tab === 'analytics' && (
-        <div className="bg-gray-900 border border-gray-800 rounded p-6">
+        <div className="bg-white border border-gray-200 rounded p-6">
           {analytics ? (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div className="bg-gray-800 rounded p-4 text-center">
+              <div className="bg-gray-50 border border-gray-100 rounded p-4 text-center">
                 <p className="text-2xl font-bold text-black">{analytics.totalRegistrations}</p>
-                <p className="text-xs text-gray-400 mt-1">Registrations</p>
+                <p className="text-xs text-gray-500 mt-1">Registrations</p>
               </div>
-              <div className="bg-gray-800 rounded p-4 text-center">
+              <div className="bg-gray-50 border border-gray-100 rounded p-4 text-center">
                 <p className="text-2xl font-bold text-black">{analytics.attendance || 0}</p>
-                <p className="text-xs text-gray-400 mt-1">Attendance</p>
+                <p className="text-xs text-gray-500 mt-1">Attendance</p>
               </div>
-              <div className="bg-gray-800 rounded p-4 text-center">
+              <div className="bg-gray-50 border border-gray-100 rounded p-4 text-center">
                 <p className="text-2xl font-bold text-black">₹{analytics.revenue}</p>
-                <p className="text-xs text-gray-400 mt-1">Revenue</p>
+                <p className="text-xs text-gray-500 mt-1">Revenue</p>
               </div>
               {event.isTeamEvent && (
                 <>
-                  <div className="bg-gray-800 rounded p-4 text-center">
+                  <div className="bg-gray-50 border border-gray-100 rounded p-4 text-center">
                     <p className="text-2xl font-bold text-black">{analytics.completedTeams || 0}</p>
-                    <p className="text-xs text-gray-400 mt-1">Complete Teams</p>
+                    <p className="text-xs text-gray-500 mt-1">Complete Teams</p>
                   </div>
-                  <div className="bg-gray-800 rounded p-4 text-center">
+                  <div className="bg-gray-50 border border-gray-100 rounded p-4 text-center">
                     <p className="text-2xl font-bold text-black">{analytics.formingTeams || 0}</p>
-                    <p className="text-xs text-gray-400 mt-1">Forming Teams</p>
+                    <p className="text-xs text-gray-500 mt-1">Forming Teams</p>
                   </div>
                 </>
               )}
-              <div className="bg-gray-800 rounded p-4 text-center">
+              <div className="bg-gray-50 border border-gray-100 rounded p-4 text-center">
                 <p className="text-2xl font-bold text-black">{analytics.merchandiseSales || 0}</p>
-                <p className="text-xs text-gray-400 mt-1">Merch Sales</p>
+                <p className="text-xs text-gray-500 mt-1">Merch Sales</p>
               </div>
-              <div className="bg-gray-800 rounded p-4 text-center">
+              <div className="bg-gray-50 border border-gray-100 rounded p-4 text-center">
                 <p className="text-2xl font-bold text-black">{analytics.totalRegistrations}/{event.registrationLimit}</p>
-                <p className="text-xs text-gray-400 mt-1">Capacity</p>
+                <p className="text-xs text-gray-500 mt-1">Capacity</p>
               </div>
             </div>
           ) : (

@@ -54,6 +54,32 @@ exports.postMessage = async (req, res) => {
             io.to(`event-${eventId}`).emit("newMessage", message);
         }
 
+        // Create in-app notification if it's an announcement
+        if (message.isAnnouncement) {
+            try {
+                const Notification = require("../models/Notification");
+                const registrations = await Registration.find({
+                    event: eventId,
+                    status: "registered"
+                });
+
+                const notifications = registrations.map(reg => ({
+                    user: reg.participant,
+                    type: "announcement",
+                    event: eventId,
+                    title: `Announcement for ${event.Name} by ${message.author.organizerName || "Organizer"}`,
+                    content: content.trim(),
+                    link: `/events/${eventId}`
+                }));
+
+                if (notifications.length > 0) {
+                    await Notification.insertMany(notifications);
+                }
+            } catch (err) {
+                console.error("Failed to create announcement notifications:", err);
+            }
+        }
+
         res.status(201).json(message);
     } catch (error) {
         console.error("Post message error:", error);

@@ -42,6 +42,17 @@ export default function ManageOrganizers() {
     }
   };
 
+  const CATEGORY_OPTIONS = ['Sports', 'Cultural', 'Technical', 'Music', 'Dance', 'Drama', 'Art', 'Literature', 'Social', 'Other'];
+
+  const toggleCategory = (cat) => {
+    const current = createForm.category || [];
+    if (current.includes(cat)) {
+      setCreateForm({ ...createForm, category: current.filter(c => c !== cat) });
+    } else {
+      setCreateForm({ ...createForm, category: [...current, cat] });
+    }
+  };
+
   const toggleStatus = async (id, isApproved) => {
     try {
       if (isApproved) {
@@ -103,18 +114,22 @@ export default function ManageOrganizers() {
                   <input type="text" required value={createForm.organizerName} onChange={(e) => setCreateForm({ ...createForm, organizerName: e.target.value })}
                     className={inputClass} />
                 </div>
-                <div>
-                  <label className={labelClass}>Category</label>
-                  <select multiple value={createForm.category} onChange={(e) => {
-                    const values = Array.from(e.target.selectedOptions, option => option.value);
-                    setCreateForm({ ...createForm, category: values });
-                  }}
-                    className={`${inputClass} py-1.5`} size="4">
-                    {["Sports", "Cultural", "Technical", "Music", "Dance", "Drama", "Art", "Literature", "Social", "Other"].map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                  <p className="text-[10px] text-gray-400 mt-1">Hold Ctrl/Cmd to multi-select</p>
+                <div className="col-span-2">
+                  <label className={labelClass}>Categories</label>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {CATEGORY_OPTIONS.map(cat => {
+                      const isSelected = (createForm.category || []).includes(cat);
+                      return (
+                        <button key={cat} type="button" onClick={() => toggleCategory(cat)}
+                          className={`px-3 py-1.5 rounded text-sm cursor-pointer ${isSelected
+                            ? 'bg-black text-white-important text-white shadow shadow-200'
+                            : 'bg-white text-gray-500 border border-gray-200 hover:border-gray-300'
+                            }`}>
+                          {cat}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
               <div>
@@ -140,8 +155,8 @@ export default function ManageOrganizers() {
         {['', 'enabled', 'disabled'].map(f => (
           <button key={f} onClick={() => setFilter(f)}
             className={`px-4 py-2 rounded text-sm font-medium cursor-pointer  capitalize ${filter === f
-                ? 'bg-black text-white-important text-white shadow shadow -200'
-                : 'bg-gray-50 text-gray-500 hover:bg-gray-300 border border-gray-200 border'
+              ? 'bg-black text-white-important text-white shadow shadow -200'
+              : 'bg-gray-50 text-gray-500 hover:bg-gray-300 border border-gray-200 border'
               }`}>
             {f === '' ? 'All' : f}
           </button>
@@ -167,8 +182,8 @@ export default function ManageOrganizers() {
                 </span>
                 <button onClick={() => toggleStatus(org._id, org.isApproved)}
                   className={`px-3 py-1.5 text-xs font-medium rounded cursor-pointer  ${org.isApproved
-                      ? 'bg-gray-100 text-black hover:bg-gray-400'
-                      : 'bg-gray-100 text-black hover:bg-gray-400'
+                    ? 'bg-gray-100 text-black hover:bg-gray-400'
+                    : 'bg-gray-100 text-black hover:bg-gray-400'
                     }`}>
                   {org.isApproved ? 'Disable' : 'Enable'}
                 </button>

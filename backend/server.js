@@ -18,6 +18,7 @@ const teamRoutes = require("./routes/teamRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
 const forumRoutes = require("./routes/forumRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 const app = express();
 const server = http.createServer(app);
@@ -25,7 +26,7 @@ const server = http.createServer(app);
 // Shared CORS options
 const corsOptions = {
     origin: process.env.FRONTEND_URL || "http://localhost:3000",
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     credentials: true,
 };
 
@@ -66,6 +67,7 @@ app.use("/api/teams", teamRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/forum", forumRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // Basic route
 app.get("/", (req, res) => {
